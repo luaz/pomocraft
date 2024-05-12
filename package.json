@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
+    "devLocal": "nuxt dev",
     "dev": "nuxt dev --host virtualbox.local",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
