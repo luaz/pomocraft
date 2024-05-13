@@ -8,7 +8,9 @@ const state = reactive({
   newTaskName: null,
   selectedMenuTask: null,
   newProjectName: null,
-  projectMenuId: null
+  menuProjectItem: null,
+  editProjectName: null,
+
 })  
 
 async function logEntry(pomoCount, secondCount) {
@@ -79,6 +81,15 @@ async function createNewProject() {
   state.newProjectName = ''
 }
 
+async function updateProject() {
+  const data = {
+    name: state.editProjectName
+  }
+  await db.project.update(state.projectEditId, data)
+  state.projectEditId = null
+  state.editProjectName = null
+}
+
 const projects = useObservable(
   liveQuery(async () => {
     return await db.project
@@ -89,12 +100,18 @@ const projects = useObservable(
 const projectMenuItems = [
   [
     {
-      label: 'Delete',
+      label: 'Edit',
       click: async () => {
-         await db.project.update(state.projectMenuId, { active: 0 })
+         state.projectEditId = state.menuProjectItem.id
+         state.editProjectName = state.menuProjectItem.name
       }
     },
-
+    {
+      label: 'Delete',
+      click: async () => {
+         await db.project.update(state.menuProjectItem.id, { active: 0 })
+      }
+    }
   ]
 ]
 
@@ -127,7 +144,7 @@ const projectMenuItems = [
       <UInput v-model="state.newProjectName" placeholder="Create a new project" @keyup.enter="createNewProject" />
       <div v-for="project in projects" :key="project.id">
         <div class="p-2 my-2 dark:bg-slate-800 rounded-md flex items-center">
-          <UDropdown :items="projectMenuItems" :popper="{ placement: 'bottom-start' }" @click="state.projectMenuId = project.id">
+          <UDropdown :items="projectMenuItems" :popper="{ placement: 'bottom-start' }" @click="state.menuProjectItem = project">
             <UButton
               :padded="false"
               color="gray"
@@ -135,7 +152,8 @@ const projectMenuItems = [
               icon="i-heroicons-ellipsis-vertical"
           /> 
           </UDropdown>
-          <span>{{ project.name }}</span>
+          <span v-if="state.projectEditId == project.id"><UInput v-model="state.editProjectName" placeholder="Project name" @keyup.enter="updateProject" /></span>
+          <span v-else>{{ project.name }}</span>
         </div>
       </div>
     </div>
