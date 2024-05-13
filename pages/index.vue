@@ -33,23 +33,43 @@ async function addPomo(pomoCount, secondCount) {
   await db.pomo.add(data)
 }
 
-async function refreshPomoCount() {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+const todayPomos = useObservable(
+  liveQuery(async () => {
 
-  const tomorrow = new Date(today);
-  tomorrow.setDate(today.getDate() + 1);
-  tomorrow.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-  const rows = await db.pomo
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+
+    return await db.pomo
       .where('timestamp').between(today.toISOString(), tomorrow.toISOString())
       .toArray();
-
-  let total = 0
-  rows.forEach(obj => {
-    total += obj.pomoCount
   })
-  state.todayPomo = total
+)
+
+const todayPomoStat = computed(() => {
+  let pomoCount = 0
+  let secondCount = 0
+  console.log(todayPomos.value)
+  todayPomos?.value?.forEach(obj => {
+    pomoCount += obj.pomoCount
+    secondCount += obj.secondCount
+  })
+
+  return {
+    pomoCount,
+    secondCount
+  }
+})
+
+function formatTime(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
 }
 
 async function createNewTask() {
@@ -266,6 +286,9 @@ function formatListItemClass(item) {
       </div>
       <div>
         <LxTimer @completed="addPomo" :taskName="state.activeTask?.name" />
+        <div>
+          Today: {{  todayPomoStat.pomoCount }} x 🍅 ({{ formatTime(todayPomoStat.secondCount) }})
+        </div>
       </div>
       <div>
         <UInput v-model="state.newProjectName" placeholder="Create a new project" @keyup.enter="createNewProject" />
