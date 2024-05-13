@@ -36,6 +36,11 @@ async function addPomo(pomoCount, secondCount) {
     const project = findProjects.value.get(data.projectId)
     await db.project.update(project.id, { pomoCount: (project.pomoCount || 0) + pomoCount,  secondCount: (project.secondCount || 0) + secondCount })
   }
+
+  if (data.taskId) {
+    const task = findTasks.value.get(data.taskId)
+    await db.task.update(task.id, { pomoCount: (task.pomoCount || 0) + pomoCount,  secondCount: (task.secondCount || 0) + secondCount })
+  }
 }
 
 const todayPomos = useObservable(
@@ -111,6 +116,10 @@ const tasks = useObservable(
       .where('active').equals(1).toArray();      
   })
 )
+
+const findTasks = computed(() => {
+  return new Map(tasks?.value?.map(item => [item.id, item]));
+})
 
 const taskMenuItems = [
   [
@@ -281,7 +290,7 @@ function formatListItemClass(item) {
                 /> 
               </UDropdown>
               <span v-if="state.editTaskId == task.id"><UInput v-model="state.editTaskName" placeholder="Project name" @keyup.enter="updateTask" /></span>
-              <span v-else>{{ task.name }} <span v-if="findProjects.has(task.projectId)" class="rounded-lg py-1 px-2 text-xs" :class="[`bg-${findProjects.get(task.projectId).colorId}`]">{{ findProjects.get(task.projectId).name }}</span></span>
+              <div v-else class=" w-full">{{ task.name }} <span v-if="findProjects.has(task.projectId)" class="rounded-lg py-1 px-2 text-xs" :class="[`bg-${findProjects.get(task.projectId).colorId}`]">{{ findProjects.get(task.projectId).name }}</span> <div v-if="task.pomoCount" class="text-xs float-right">{{ task.pomoCount }} x 🍅 ({{ formatTime(task.secondCount) }})</div></div>
             </div>
             <div>
               <USelectMenu v-if="state.editTaskProjectId != null && state.menuTaskItem?.id == task.id" :options="projects" v-model="state.editTaskProjectId" by="id" option-attribute="name" value-attribute="id" @change="updateTask">
