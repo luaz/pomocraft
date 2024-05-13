@@ -1,4 +1,7 @@
 <script setup>
+import completeSound from "~/assets/sounds/complete.ogg";
+import startSound from "~/assets/sounds/start.ogg";
+  
 const props = defineProps(['taskName'])
 
 const emit = defineEmits(['completed'])
@@ -76,6 +79,7 @@ function updateTimer() {
   else if (state.mode == Mode.RUNNING) {
     state.mode = Mode.COMPLETED
     if (seconds == -1) {
+      playSound(completeSound)
       showNotification('Pomodoro Completed', [{ action: 'takeBreak', title: 'Take Break' }], (event) => {
         if (event.action === "takeBreak") {
           changeMode()
@@ -87,6 +91,7 @@ function updateTimer() {
   else if (state.mode == Mode.RESTING) {
     state.mode = Mode.IDLE
     if (seconds == -1) {
+      playSound(startSound)
       blinkTimerId = blinkTitle('[Ready]',  '(ง •̀_•́)ง')
     }
   }
@@ -120,6 +125,13 @@ function showNotification(message, actions, callback) {
       }
     });
   }
+}
+
+function playSound(file) {
+  const audio = new Audio(file)
+
+  // Play the audio
+  audio.play();
 }
 
 let blinkCount = 0
