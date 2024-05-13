@@ -148,49 +148,51 @@ function formatListItemClass(item) {
 </script>
 
 <template>
-  I am a timer
-
-  <div class="grid grid-flow-col auto-cols-max">
-    <div>
-      <UInput v-model="state.newTaskName" placeholder="Create a new task" @keyup.enter="createNewTask" />
-      <div v-for="task in tasks" :key="task.id">
-        <div class="p-2 my-2 dark:bg-slate-800 rounded-md flex items-center">
-          <UDropdown :items="taskMenuItems" :popper="{ placement: 'bottom-start' }" @click="state.selectedMenuTask = task.id">
-            <UButton
-              :padded="false"
-              color="gray"
-              variant="link"
-              icon="i-heroicons-ellipsis-vertical"
-          /> 
-          </UDropdown>
-          <span>{{ task.name }}</span>
+  <div>
+    <div class="grid grid-flow-col gap-2 auto-cols-3 justify-center">
+      <div>
+        <UInput v-model="state.newTaskName" placeholder="Create a new task" @keyup.enter="createNewTask" />
+        <div v-for="task in tasks" :key="task.id">
+          <div class="p-2 my-2 dark:bg-slate-800 rounded-md flex items-center">
+            <UDropdown :items="taskMenuItems" :popper="{ placement: 'bottom-start' }" @click="state.selectedMenuTask = task.id">
+              <UButton
+                :padded="false"
+                color="gray"
+                variant="link"
+                icon="i-heroicons-ellipsis-vertical"
+            /> 
+            </UDropdown>
+            <span>{{ task.name }}</span>
+          </div>
         </div>
       </div>
-    </div>
-    <div>
-      <LxTimer @completed="logEntry" />
-    </div>
-    <div>
-      <UInput v-model="state.newProjectName" placeholder="Create a new project" @keyup.enter="createNewProject" />
-      <div v-for="project in projects" :key="project.id">
-        <div class="p-2 my-2 rounded-md flex items-center" :class="formatListItemClass(project)">
-          <UDropdown :items="projectMenuItems" :popper="{ placement: 'bottom-start' }" @click="state.menuProjectItem = project">
-            <UButton
-              :padded="false"
-              color="gray"
-              variant="link"
-              icon="i-heroicons-ellipsis-vertical"
-            /> 
-          </UDropdown>
-          <span v-if="state.projectEditId == project.id"><UInput v-model="state.editProjectName" placeholder="Project name" @keyup.enter="updateProject" /></span>
-          <span v-else>{{ project.name }}</span>
+      <div>
+        <LxTimer @completed="logEntry" />
+      </div>
+      <div>
+        <UInput v-model="state.newProjectName" placeholder="Create a new project" @keyup.enter="createNewProject" />
+        <div v-for="project in projects" :key="project.id">
+          <div class="p-2 my-2 rounded-md flex items-center" :class="formatListItemClass(project)">
+            <UDropdown :items="projectMenuItems" :popper="{ placement: 'bottom-start' }" @click="state.menuProjectItem = project">
+              <UButton
+                :padded="false"
+                color="gray"
+                variant="link"
+                icon="i-heroicons-ellipsis-vertical"
+              /> 
+            </UDropdown>
+            <span v-if="state.projectEditId == project.id"><UInput v-model="state.editProjectName" placeholder="Project name" @keyup.enter="updateProject" /></span>
+            <span v-else>{{ project.name }}</span>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
+  <!--
   <UButton @click="refreshPomoCount">Refresh Pomo</UButton> 
   <div>Today: {{ state.todayPomo }}</div>
+-->
 
 
 
