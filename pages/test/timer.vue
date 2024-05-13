@@ -5,12 +5,17 @@ const db = useDb()
 
 const state = reactive({
   todayPomo: 0,
+
   newTaskName: null,
-  selectedMenuTask: null,
+  menuTaskItem: null,
+  editTaskId: null,
+  editTaskName: null,
 
   newProjectName: null,
   menuProjectItem: null,
+  editProjectId: null,
   editProjectName: null,
+
 
   showColorSelector: false,
 
@@ -56,6 +61,15 @@ async function createNewTask() {
   state.newTaskName = ''
 }
 
+async function updateTask() {
+  const data = {
+    name: state.editTaskName
+  }
+  await db.task.update(state.editTaskId, data)
+  state.editTaskId = null
+  state.editTaskName = null
+}
+
 const tasks = useObservable(
   liveQuery(async () => {
     return await db.task
@@ -66,12 +80,18 @@ const tasks = useObservable(
 const taskMenuItems = [
   [
     {
-      label: 'Delete',
-      click: () => {
-        alert(`Delete ${state.selectedMenuTask}`)
+      label: 'Edit',
+      click: async () => {
+         state.editTaskId = state.menuTaskItem.id
+         state.editTaskName = state.menuTaskItem.name
       }
     },
-
+    {
+      label: 'Delete',
+      click: async () => {
+         await db.task.update(state.menuTaskItem.id, { active: 0 })
+      }
+    },
   ]
 ]
 
@@ -88,8 +108,8 @@ async function updateProject() {
   const data = {
     name: state.editProjectName
   }
-  await db.project.update(state.projectEditId, data)
-  state.projectEditId = null
+  await db.project.update(state.editProjectId, data)
+  state.editProjectId = null
   state.editProjectName = null
 }
 
@@ -105,7 +125,7 @@ const projectMenuItems = [
     {
       label: 'Edit',
       click: async () => {
-         state.projectEditId = state.menuProjectItem.id
+         state.editProjectId = state.menuProjectItem.id
          state.editProjectName = state.menuProjectItem.name
       }
     },
@@ -154,7 +174,7 @@ function formatListItemClass(item) {
         <UInput v-model="state.newTaskName" placeholder="Create a new task" @keyup.enter="createNewTask" />
         <div v-for="task in tasks" :key="task.id">
           <div class="p-2 my-2 dark:bg-slate-800 rounded-md flex items-center">
-            <UDropdown :items="taskMenuItems" :popper="{ placement: 'bottom-start' }" @click="state.selectedMenuTask = task.id">
+            <UDropdown :items="taskMenuItems" :popper="{ placement: 'bottom-start' }" @click="state.menuTaskItem = task">
               <UButton
                 :padded="false"
                 color="gray"
@@ -162,7 +182,8 @@ function formatListItemClass(item) {
                 icon="i-heroicons-ellipsis-vertical"
             /> 
             </UDropdown>
-            <span>{{ task.name }}</span>
+            <span v-if="state.editTaskId == task.id"><UInput v-model="state.editTaskName" placeholder="Project name" @keyup.enter="updateTask" /></span>
+            <span v-else>{{ task.name }}</span>
           </div>
         </div>
       </div>
@@ -181,7 +202,7 @@ function formatListItemClass(item) {
                 icon="i-heroicons-ellipsis-vertical"
               /> 
             </UDropdown>
-            <span v-if="state.projectEditId == project.id"><UInput v-model="state.editProjectName" placeholder="Project name" @keyup.enter="updateProject" /></span>
+            <span v-if="state.editProjectId == project.id"><UInput v-model="state.editProjectName" placeholder="Project name" @keyup.enter="updateProject" /></span>
             <span v-else>{{ project.name }}</span>
           </div>
         </div>
