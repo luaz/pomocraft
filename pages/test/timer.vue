@@ -5,7 +5,8 @@ const db = useDb()
 
 const state = reactive({
   todayPomo: 0,
-  newTaskName: null
+  newTaskName: null,
+  selectedMenuTask: null
 })  
 
 async function logEntry(pomoCount, secondCount) {
@@ -61,6 +62,18 @@ const tasks = useObservable(
     return data
   })
 )
+
+const taskMenuItems = [
+  [
+    {
+      label: 'Delete',
+      click: () => {
+        alert(`Delete ${state.selectedMenuTask}`)
+      }
+    }
+  ]
+]
+
 </script>
 
 <template>
@@ -70,7 +83,17 @@ const tasks = useObservable(
     <div>
       <UInput v-model="state.newTaskName" placeholder="Create a new task" @keyup.enter="createNewTask" />
       <div v-for="task in tasks" :key="task.id">
-        - {{ task.name }}
+        <div class="p-2 my-2 dark:bg-slate-800 rounded-md flex items-center">
+          <UDropdown :items="taskMenuItems" :popper="{ placement: 'bottom-start' }" @click="state.selectedMenuTask = task.id">
+            <UButton
+              :padded="false"
+              color="gray"
+              variant="link"
+              icon="i-heroicons-ellipsis-vertical"
+          /> 
+          </UDropdown>
+          <span>{{ task.name }}</span>
+        </div>
       </div>
     </div>
     <div>
