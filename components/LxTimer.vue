@@ -130,7 +130,7 @@ watch(() => state.timerText, (timerText) => {  document.title = timerText })
      -->
 
     <div class="flex justify-center items-center">
-      <UButton color="gray" variant="link">
+      <UButton color="gray" variant="link" tabindex="-1">
         <UIcon v-show="state.mode == Mode.IDLE || state.mode == Mode.RESTING" name="i-heroicons-play-circle" class="size-8" @click="changeMode" />
         <UIcon v-show="state.mode == Mode.RUNNING" name="i-heroicons-stop-circle" class="size-8" @click="changeMode" />
         <UIcon v-show="state.mode == Mode.COMPLETED" name="i-heroicons-face-smile" class="size-8" @click="changeMode" />

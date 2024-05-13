@@ -31,6 +31,11 @@ async function addPomo(pomoCount, secondCount) {
     secondCount
   }
   await db.pomo.add(data)
+
+  if (data.projectId) {
+    const project = findProjects.value.get(data.projectId)
+    await db.project.update(project.id, { pomoCount: (project.pomoCount || 0) + pomoCount,  secondCount: (project.secondCount || 0) + secondCount })
+  }
 }
 
 const todayPomos = useObservable(
@@ -69,7 +74,11 @@ function formatTime(seconds) {
   const minutes = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
 
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+  if (hours <=0 && minutes <= 0)
+    return `${String(secs).padStart(2, '0')}s`
+  else if (hours <= 0)
+    return `${String(minutes).padStart(2, '0')}m${String(secs).padStart(2, '0')}s`
+  return `${String(hours).padStart(2, '0')}h${String(minutes).padStart(2, '0')}m`
 }
 
 async function createNewTask() {
@@ -303,7 +312,7 @@ function formatListItemClass(item) {
               /> 
             </UDropdown>
             <span v-if="state.editProjectId == project.id"><UInput v-model="state.editProjectName" placeholder="Project name" @keyup.enter="updateProject" /></span>
-            <span v-else>{{ project.name }}</span>
+            <div v-else class=" w-full">{{ project.name }} <div v-if="project.pomoCount" class="text-xs float-right">{{  project.pomoCount }} x 🍅 ({{ formatTime(project.secondCount) }})</div></div>
           </div>
         </div>
       </div>
