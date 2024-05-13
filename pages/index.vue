@@ -62,7 +62,6 @@ const todayPomos = useObservable(
 const todayPomoStat = computed(() => {
   let pomoCount = 0
   let secondCount = 0
-  console.log(todayPomos.value)
   todayPomos?.value?.forEach(obj => {
     pomoCount += obj.pomoCount
     secondCount += obj.secondCount

@@ -57,7 +57,10 @@ function changeMode() {
     seconds = POMO_REST_SECONDS
     state.timerText = formatTime(seconds)
     state.mode = Mode.RESTING
-
+    if (notification) {
+      notification.close()
+      notification = null
+    }
     if (timerId)
        clearInterval(timerId)    
     timerId = setInterval(updateTimer, 1000)
@@ -73,7 +76,11 @@ function updateTimer() {
   else if (state.mode == Mode.RUNNING) {
     state.mode = Mode.COMPLETED
     if (seconds == -1) {
-      showNotification('Pomodoro Completed')
+      showNotification('Pomodoro Completed', [{ action: 'takeBreak', title: 'Take Break' }], (event) => {
+        if (event.action === "takeBreak") {
+          changeMode()
+        }
+      })
       blinkTimerId = blinkTitle('[Break Time]',  '( -_-)')
     }
   }
@@ -91,17 +98,25 @@ function formatTime(seconds) {
   return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
 }
 
-function showNotification(message) {
-  console.log('showNotification', Notification.permission)
+let notification = null
+function showNotification(message, actions, callback) {
   if (Notification.permission === 'granted') {
     // Create a new notification
-    new Notification(message);
+    notification = new Notification(message, /*{ actions }*/)
+    notification.onclick = (event) => callback(event)
+    notification.addEventListener("close", () => {
+      notification = null
+    });
   } else if (Notification.permission !== 'denied') {
     // Request permission from the user
     Notification.requestPermission().then(permission => {
       if (permission === 'granted') {
         // Create a new notification
-        new Notification(message);
+        notification = new Notification(message, /*{ actions }*/)
+        notification.onclick = (event) => callback(event)
+        notification.addEventListener("close", () => {
+          notification = null
+        });
       }
     });
   }
