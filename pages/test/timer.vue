@@ -6,7 +6,9 @@ const db = useDb()
 const state = reactive({
   todayPomo: 0,
   newTaskName: null,
-  selectedMenuTask: null
+  selectedMenuTask: null,
+  newProjectName: null,
+  projectMenuId: null
 })  
 
 async function logEntry(pomoCount, secondCount) {
@@ -51,15 +53,8 @@ async function createNewTask() {
 
 const tasks = useObservable(
   liveQuery(async () => {
-    //
-    // Query the DB using our promise based API.
-    // The end result will magically become
-    // observable.
-    //
-    const data = await db.task
+    return await db.task
       .where('active').equals(1).toArray();      
-    console.log(data)
-    return data
   })
 )
 
@@ -70,7 +65,36 @@ const taskMenuItems = [
       click: () => {
         alert(`Delete ${state.selectedMenuTask}`)
       }
-    }
+    },
+
+  ]
+]
+
+async function createNewProject() {
+  const data = {
+    name: state.newProjectName,
+    active: 1
+  }
+  await db.project.add(data)
+  state.newProjectName = ''
+}
+
+const projects = useObservable(
+  liveQuery(async () => {
+    return await db.project
+      .where('active').equals(1).toArray();   
+  })
+)
+
+const projectMenuItems = [
+  [
+    {
+      label: 'Delete',
+      click: async () => {
+         await db.project.update(state.projectMenuId, { active: 0 })
+      }
+    },
+
   ]
 ]
 
@@ -100,7 +124,20 @@ const taskMenuItems = [
       <LxTimer @completed="logEntry" />
     </div>
     <div>
-      Projects
+      <UInput v-model="state.newProjectName" placeholder="Create a new project" @keyup.enter="createNewProject" />
+      <div v-for="project in projects" :key="project.id">
+        <div class="p-2 my-2 dark:bg-slate-800 rounded-md flex items-center">
+          <UDropdown :items="projectMenuItems" :popper="{ placement: 'bottom-start' }" @click="state.projectMenuId = project.id">
+            <UButton
+              :padded="false"
+              color="gray"
+              variant="link"
+              icon="i-heroicons-ellipsis-vertical"
+          /> 
+          </UDropdown>
+          <span>{{ project.name }}</span>
+        </div>
+      </div>
     </div>
   </div>
 
