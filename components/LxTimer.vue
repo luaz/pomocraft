@@ -16,8 +16,8 @@ const Mode = {
 
 let timerId = null
 let seconds = 0
-const POMO_FOCUS_SECONDS = 10 // 60* 25
-const POMO_REST_SECONDS = 5
+const POMO_FOCUS_SECONDS = process.dev ? 10 : 60 * 25
+const POMO_REST_SECONDS = process.dev ? 5 : 60 * 5
 
 const state = reactive({ 
   mode: Mode.IDLE, // idle / running / paused
