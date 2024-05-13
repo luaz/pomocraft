@@ -29,6 +29,11 @@ const modeText = computed(() => {
 })
 
 function changeMode() {
+  if (blinkTimerId) {
+     clearInterval(blinkTimerId)
+     blinkTimerId = null
+  }
+
   if (state.mode == Mode.IDLE || state.mode == Mode.RESTING) {
     if (!props.taskName) {
       alert('Select a Task')
@@ -52,6 +57,7 @@ function changeMode() {
     seconds = POMO_REST_SECONDS
     state.timerText = formatTime(seconds)
     state.mode = Mode.RESTING
+
     if (timerId)
        clearInterval(timerId)    
     timerId = setInterval(updateTimer, 1000)
@@ -63,16 +69,19 @@ function updateTimer() {
   seconds--
   if (seconds >= 0) {
     state.timerText = formatTime(seconds) 
-    
   }
   else if (state.mode == Mode.RUNNING) {
     state.mode = Mode.COMPLETED
     if (seconds == -1) {
       showNotification('Pomodoro Completed')
+      blinkTimerId = blinkTitle('[Break Time]',  '( -_-)')
     }
   }
   else if (state.mode == Mode.RESTING) {
     state.mode = Mode.IDLE
+    if (seconds == -1) {
+      blinkTimerId = blinkTitle('[Ready]',  '(ง •̀_•́)ง')
+    }
   }
 }
 
@@ -98,7 +107,35 @@ function showNotification(message) {
   }
 }
 
-watch(() => state.timerText, (timerText) => {  document.title = timerText })
+let blinkCount = 0
+let blinkTimerId = null
+
+function blinkTitle(title, filler) {
+  let isBlinking = false;
+
+  blinkCount = 0
+  return setInterval(() => {
+    if (isBlinking) {
+      document.title = title
+      blinkCount++
+    } else {
+      document.title = filler
+    }
+    isBlinking = !isBlinking;
+
+    if (blinkCount > 20 && blinkTimerId) {
+      clearInterval(blinkTimerId)
+      blinkTimerId = null
+    }
+  }, 500); // Blink interval in milliseconds (e.g., 500ms for half-second blink)
+}
+
+watch(() => state.timerText, (timerText) => { 
+  if (state.mode == Mode.RESTING)
+    document.title = `[B] ${timerText}`
+  else
+    document.title = timerText
+})
 
 </script>
 
@@ -106,7 +143,7 @@ watch(() => state.timerText, (timerText) => {  document.title = timerText })
   <div class="flex w-48 py-4 px-4 rounded-md" :class="{ 'bg-slate-100': state.mode == Mode.IDLE, 'bg-lime-100': state.mode == Mode.RUNNING, 'bg-red-100': state.mode == Mode.COMPLETED, 'bg-orange-100': state.mode == Mode.RESTING }">
     <div class="flex-1 justify-center">
       <div class="text-center text-sm text-slate-500">{{ modeText }}</div>
-      <div class="text-center text-5xl font-medium dark:text-slate-500">{{ state.timerText }}</div>
+      <div class="text-center text-5xl font-medium dark:text-slate-500" :class="{ 'animate-blink': state.mode == Mode.COMPLETED}">{{ state.timerText }}</div>
       <div class="text-center text-sm text-slate-700 font-medium text-ellipsis ">
         {{ taskName || 'Select a Task' }}
       </div>
