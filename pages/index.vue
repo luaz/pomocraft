@@ -19,16 +19,14 @@ const state = reactive({
   editProjectId: null,
   editProjectName: null,
 
-
   showColorSelector: false,
-
 })  
 
-async function logEntry(pomoCount, secondCount) {
+async function addPomo(pomoCount, secondCount) {
   const data = { 
     timestamp: new Date().toISOString(), 
-    taskId: 1,
-    projectId: 1,
+    taskId: state.activeTask.id,
+    projectId: state.activeTask.projectId,
     pomoCount,
     secondCount
   }
@@ -173,8 +171,53 @@ const colorOptions = [
     id: 'red-500',
   },
   {
+    id: 'orange-500',
+  },
+  {
     id: 'amber-500'
-  }
+  },
+  {
+    id: 'yellow-500'
+  },
+  {
+    id: 'lime-500'
+  },
+  {
+    id: 'green-500'
+  },
+  {
+    id: 'emerald-500'
+  },
+  {
+    id: 'teal-500'
+  },
+  {
+    id: 'cyan-500'
+  },
+  {
+    id: 'sky-500'
+  },
+  {
+    id: 'blue-500'
+  },
+  {
+    id: 'indigo-500'
+  },
+  {
+    id: 'violet-500'
+  },
+  {
+    id: 'purple-500'
+  },
+  {
+    id: 'fuchsia-500'
+  },
+  {
+    id: 'pink-500'
+  },
+  {
+    id: 'rose-500'
+  },
 ]
 
 async function selectColor(colorId) {
@@ -222,7 +265,7 @@ function formatListItemClass(item) {
         </div>
       </div>
       <div>
-        <LxTimer @completed="logEntry" :taskName="state.activeTask?.name" />
+        <LxTimer @completed="addPomo" :taskName="state.activeTask?.name" />
       </div>
       <div>
         <UInput v-model="state.newProjectName" placeholder="Create a new project" @keyup.enter="createNewProject" />
