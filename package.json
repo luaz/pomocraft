@@ -12,8 +12,10 @@
   },
   "dependencies": {
     "@nuxt/ui": "^2.16.0",
+    "@vueuse/rxjs": "^10.9.0",
     "dexie": "^4.0.4",
     "nuxt": "^3.11.2",
+    "rxjs": "^7.8.1",
     "vue": "^3.4.27",
     "vue-router": "^4.3.2"
   }
