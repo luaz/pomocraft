@@ -10,6 +10,7 @@ const state = reactive({
   menuTaskItem: null,
   editTaskId: null,
   editTaskName: null,
+  editTaskProjectId: null,
 
   newProjectName: null,
   menuProjectItem: null,
@@ -62,12 +63,18 @@ async function createNewTask() {
 }
 
 async function updateTask() {
-  const data = {
-    name: state.editTaskName
-  }
-  await db.task.update(state.editTaskId, data)
+  let data = {}
+  if (state.editTaskName)
+    data.name = state.editTaskName
+  if (state.editTaskProjectId)
+    data.projectId = state.editTaskProjectId
+
+  console.log('updateTask', state.menuTaskItem.id, data)
+  await db.task.update(state.menuTaskItem.id, data)
+
   state.editTaskId = null
   state.editTaskName = null
+  state.editTaskProjectId = null
 }
 
 const tasks = useObservable(
@@ -84,6 +91,12 @@ const taskMenuItems = [
       click: async () => {
          state.editTaskId = state.menuTaskItem.id
          state.editTaskName = state.menuTaskItem.name
+      }
+    },
+    {
+      label: 'Project',
+      click: () => {
+        state.editTaskProjectId = state.menuTaskItem.projectId || 0
       }
     },
     {
@@ -119,6 +132,10 @@ const projects = useObservable(
       .where('active').equals(1).toArray();   
   })
 )
+
+const findProjects = computed(() => {
+  return new Map(projects?.value?.map(item => [item.id, item]));
+})
 
 const projectMenuItems = [
   [
@@ -173,17 +190,26 @@ function formatListItemClass(item) {
       <div>
         <UInput v-model="state.newTaskName" placeholder="Create a new task" @keyup.enter="createNewTask" />
         <div v-for="task in tasks" :key="task.id">
-          <div class="p-2 my-2 dark:bg-slate-800 rounded-md flex items-center">
-            <UDropdown :items="taskMenuItems" :popper="{ placement: 'bottom-start' }" @click="state.menuTaskItem = task">
-              <UButton
-                :padded="false"
-                color="gray"
-                variant="link"
-                icon="i-heroicons-ellipsis-vertical"
-            /> 
-            </UDropdown>
-            <span v-if="state.editTaskId == task.id"><UInput v-model="state.editTaskName" placeholder="Project name" @keyup.enter="updateTask" /></span>
-            <span v-else>{{ task.name }}</span>
+          <div class="p-2 my-2 dark:bg-slate-800 rounded-md">
+            <div class="flex items-center">
+              <UDropdown :items="taskMenuItems" :popper="{ placement: 'bottom-start' }" @click="state.menuTaskItem = task">
+                <UButton
+                  :padded="false"
+                  color="gray"
+                  variant="link"
+                  icon="i-heroicons-ellipsis-vertical"
+                /> 
+              </UDropdown>
+              <span v-if="state.editTaskId == task.id"><UInput v-model="state.editTaskName" placeholder="Project name" @keyup.enter="updateTask" /></span>
+              <span v-else>{{ task.name }} <span v-if="findProjects.has(task.projectId)" class="rounded-lg py-1 px-2 text-xs" :class="[`bg-${findProjects.get(task.projectId).colorId}`]">{{ findProjects.get(task.projectId).name }}</span></span>
+            </div>
+            <div>
+              <USelectMenu v-if="state.editTaskProjectId != null" :options="projects" v-model="state.editTaskProjectId" by="id" option-attribute="name" value-attribute="id" @change="updateTask">
+                <template #option="{ option: project }">
+                  <span class="size-4 rounded-full" :class="`bg-${project.colorId}`" /> {{ project.name }}
+                </template>
+              </USelectMenu>
+            </div>
           </div>
         </div>
       </div>
