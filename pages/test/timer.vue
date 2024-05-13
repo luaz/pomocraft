@@ -211,7 +211,7 @@ function formatListItemClass(item) {
               <span v-else>{{ task.name }} <span v-if="findProjects.has(task.projectId)" class="rounded-lg py-1 px-2 text-xs" :class="[`bg-${findProjects.get(task.projectId).colorId}`]">{{ findProjects.get(task.projectId).name }}</span></span>
             </div>
             <div>
-              <USelectMenu v-if="state.editTaskProjectId != null" :options="projects" v-model="state.editTaskProjectId" by="id" option-attribute="name" value-attribute="id" @change="updateTask">
+              <USelectMenu v-if="state.editTaskProjectId != null && state.menuTaskItem.id == task.id" :options="projects" v-model="state.editTaskProjectId" by="id" option-attribute="name" value-attribute="id" @change="updateTask">
                 <template #option="{ option: project }">
                   <span class="size-4 rounded-full" :class="`bg-${project.colorId}`" /> {{ project.name }}
                 </template>

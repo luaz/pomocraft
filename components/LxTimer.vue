@@ -107,7 +107,7 @@ watch(() => state.timerText, (timerText) => {  document.title = timerText })
     <div class="flex-1 justify-center">
       <div class="text-center text-sm text-slate-500">{{ modeText }}</div>
       <div class="text-center text-5xl font-medium dark:text-slate-500">{{ state.timerText }}</div>
-      <div class="text-center text-sm text-slate-500">
+      <div class="text-center text-sm text-slate-700 font-medium text-ellipsis ">
         {{ taskName || 'Select a Task' }}
       </div>
     </div>
