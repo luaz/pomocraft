@@ -6,6 +6,8 @@ const db = useDb()
 const state = reactive({
   todayPomo: 0,
 
+  activeTask: null,
+
   newTaskName: null,
   menuTaskItem: null,
   editTaskId: null,
@@ -69,7 +71,6 @@ async function updateTask() {
   if (state.editTaskProjectId)
     data.projectId = state.editTaskProjectId
 
-  console.log('updateTask', state.menuTaskItem.id, data)
   await db.task.update(state.menuTaskItem.id, data)
 
   state.editTaskId = null
@@ -86,6 +87,12 @@ const tasks = useObservable(
 
 const taskMenuItems = [
   [
+    {
+      label: 'Start',
+      click: () => {
+        state.activeTask = state.menuTaskItem
+      }
+    },
     {
       label: 'Edit',
       click: async () => {
@@ -190,7 +197,7 @@ function formatListItemClass(item) {
       <div>
         <UInput v-model="state.newTaskName" placeholder="Create a new task" @keyup.enter="createNewTask" />
         <div v-for="task in tasks" :key="task.id">
-          <div class="p-2 my-2 dark:bg-slate-800 rounded-md">
+          <div class="p-2 my-2 dark:bg-slate-800 rounded-md" :class="{ 'dark:bg-gray-500': state.activeTask.id == task.id }">
             <div class="flex items-center">
               <UDropdown :items="taskMenuItems" :popper="{ placement: 'bottom-start' }" @click="state.menuTaskItem = task">
                 <UButton
@@ -214,7 +221,7 @@ function formatListItemClass(item) {
         </div>
       </div>
       <div>
-        <LxTimer @completed="logEntry" />
+        <LxTimer @completed="logEntry" :taskName="state.activeTask?.name" />
       </div>
       <div>
         <UInput v-model="state.newProjectName" placeholder="Create a new project" @keyup.enter="createNewProject" />
