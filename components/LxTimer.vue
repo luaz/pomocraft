@@ -51,7 +51,7 @@ function changeMode() {
     if (timerId)
        clearInterval(timerId)    
     timerId = setInterval(updateTimer, 1000)
-    emit('completed')
+    emit('completed', 1, POMO_FOCUS_SECONDS)
   }
 }
 
