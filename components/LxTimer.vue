@@ -102,7 +102,7 @@ watch(() => state.timerText, (timerText) => {  document.title = timerText })
   <div class="flex w-60 py-4 px-8 rounded-md" :class="{ 'bg-slate-100': state.mode == Mode.IDLE, 'bg-lime-100': state.mode == Mode.RUNNING, 'bg-red-100': state.mode == Mode.COMPLETED, 'bg-orange-100': state.mode == Mode.RESTING }">
     <div class="flex-1 justify-center">
       <div class="text-center text-sm text-slate-500">{{ modeText }}</div>
-      <div class="text-center text-5xl font-medium">{{ state.timerText }}</div>
+      <div class="text-center text-5xl font-medium dark:text-slate-500">{{ state.timerText }}</div>
     </div>
 
     <!--

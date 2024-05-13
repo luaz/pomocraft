@@ -4,7 +4,6 @@ import { useObservable } from "@vueuse/rxjs";
 const db = useDb()
 
 const state = reactive({
-  logs: [],
   todayPomo: 0,
   newTaskName: null
 })  
@@ -17,11 +16,8 @@ async function logEntry(pomoCount, secondCount) {
     pomoCount,
     secondCount
   }
-  state.logs.push(data)
   await db.pomo.add(data)
 }
-
-const logMessage = computed(() => state.logs.map(obj => JSON.stringify(obj)).join('\n'))
 
 async function refreshPomoCount() {
   const today = new Date();
