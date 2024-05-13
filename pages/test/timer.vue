@@ -7,9 +7,12 @@ const state = reactive({
   todayPomo: 0,
   newTaskName: null,
   selectedMenuTask: null,
+
   newProjectName: null,
   menuProjectItem: null,
   editProjectName: null,
+
+  showColorSelector: false,
 
 })  
 
@@ -107,13 +110,40 @@ const projectMenuItems = [
       }
     },
     {
+      label: 'Color',
+      click: () => {
+        state.showColorSelector = true
+      }
+    },
+    {
       label: 'Delete',
       click: async () => {
          await db.project.update(state.menuProjectItem.id, { active: 0 })
       }
-    }
+    },
   ]
 ]
+
+const colorOptions = [
+  {
+    id: 'red-500',
+  },
+  {
+    id: 'amber-500'
+  }
+]
+
+async function selectColor(colorId) {
+  await db.project.update(state.menuProjectItem.id, { colorId })
+  state.showColorSelector = false
+}
+
+function formatListItemClass(item) {
+  if (item.colorId) {
+    return [`bg-${item.colorId}`]
+  }
+  return ['dark:bg-slate-800']
+}
 
 </script>
 
@@ -143,14 +173,14 @@ const projectMenuItems = [
     <div>
       <UInput v-model="state.newProjectName" placeholder="Create a new project" @keyup.enter="createNewProject" />
       <div v-for="project in projects" :key="project.id">
-        <div class="p-2 my-2 dark:bg-slate-800 rounded-md flex items-center">
+        <div class="p-2 my-2 rounded-md flex items-center" :class="formatListItemClass(project)">
           <UDropdown :items="projectMenuItems" :popper="{ placement: 'bottom-start' }" @click="state.menuProjectItem = project">
             <UButton
               :padded="false"
               color="gray"
               variant="link"
               icon="i-heroicons-ellipsis-vertical"
-          /> 
+            /> 
           </UDropdown>
           <span v-if="state.projectEditId == project.id"><UInput v-model="state.editProjectName" placeholder="Project name" @keyup.enter="updateProject" /></span>
           <span v-else>{{ project.name }}</span>
@@ -161,4 +191,12 @@ const projectMenuItems = [
 
   <UButton @click="refreshPomoCount">Refresh Pomo</UButton> 
   <div>Today: {{ state.todayPomo }}</div>
+
+
+
+  <UModal v-model="state.showColorSelector">
+    <div class="flex gap-2 p-4">
+      <div class="size-16 rounded-full" v-for="color in colorOptions" :class="[`bg-${color.id}`]" @click="selectColor(color.id)"></div>
+    </div>
+  </UModal>
 </template>
