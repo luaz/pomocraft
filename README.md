@@ -1,6 +1,6 @@
 # PomoCraft
 
-A simple pomodoro client-side web application
+A simple pomodoro task client-side web application
 
 ## Dev
 
