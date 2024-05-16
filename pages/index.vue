@@ -330,6 +330,7 @@ function formatListItemClass(item) {
   return ['dark:bg-slate-800']
 }
 
+/*
 const motivationTexts = [
   "Procrastination is the thief of time.",
   "The only way to do great work is to love what you do.",
@@ -363,6 +364,74 @@ watch(() => state.motivationText, () => {
 
 onMounted(() => {
   setInterval(changeMotivationText, 1000 * 60 * 5);
+})
+ */
+
+const motivationItems = [
+  {
+    text: 'Procrastination is the thief of time.',
+    author: 'Edward Young',
+    src: '1.jpg'
+  },
+  {
+    text: 'The only way to do great work is to love what you do.',
+    author: 'Steve Jobs',
+    src: '2.jpg'
+  },
+  {
+    text: 'Success is the sum of small efforts repeated day in and day out.',
+    author: 'Robert Collier',
+    src: '3.jpg'
+  },
+  {
+    text: 'The successful warrior is the average man, with laser-like focus.',
+    author: 'Bruce Lee',
+    src: '4.jpg'
+  },
+  {
+    text: 'You will never find time for anything. If you want time you must make it.',
+    author: 'Charles Buxton',
+    src: '5.jpg'
+  },
+  {
+    text: 'The best way to predict the future is to create it.',
+    author: 'Peter Drucker',
+    src: '6.jpg'
+  },
+  {
+    text: 'Your future is created by what you do today, not tomorrow.',
+    author: 'Robert Kiyosaki',
+    src: '7.jpg'
+  },
+  {
+    text: "Don't wait. The time will never be just right.",
+    author: 'Napoleon Hill',
+    src: '8.jpg'
+  },
+  {
+    text: "The key is not to prioritize what's on your schedule, but to schedule your priorities.",
+    author: 'Stephen Covey',
+    src: '9.jpg'
+  },
+  {
+    text: 'The future depends on what you do today.',
+    author: 'Mahatma Gandhi',
+    src: '10.jpg'
+  }
+]
+
+const carouselRef = ref()
+
+onMounted(() => {
+  setInterval(() => {
+    if (!carouselRef.value) return
+
+    if (carouselRef.value.page === carouselRef.value.pages) {
+      return carouselRef.value.select(0)
+    }
+
+    carouselRef.value.next()
+  }, 1000 * 60 * 5)
 })
 
 </script>
@@ -430,6 +499,7 @@ onMounted(() => {
     </div>
   </div>
 
+  <!--
   <client-only>
     <UAlert
       class="my-5"
@@ -443,6 +513,19 @@ onMounted(() => {
       </template>
     </UAlert>
   </client-only>
+   -->
+
+  <UCarousel ref="carouselRef" v-slot="{ item }" :items="motivationItems" :ui="{ item: 'w-full' }" indicators>
+    <UAlert>
+      <template #description>
+        <div class="flex flex-col items-center justify-center mb-8">
+          <div class="flex items-center text-2xl font-semibold text-orange-100 my-3 min-h-12">{{ item.text }}</div> 
+          <div class="text-sm my-3">{{ item.author }}</div>
+        </div>
+      </template>
+    </UAlert>
+  </UCarousel>
+
 
   <UModal v-model="state.showColorSelector">
     <div class="flex gap-2 p-4">

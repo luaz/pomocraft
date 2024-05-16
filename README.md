@@ -14,4 +14,7 @@ npm run dev
 ## TODO
 
 - Export IndexedDB: https://dexie.org/docs/ExportImport/dexie-export-import
-- Fix: Task projection select box has ticks
+- Task add description/note
+- Highlght active task
+- Swap task half way
+- Make sure timer accurate by using start time
