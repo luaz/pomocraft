@@ -71,7 +71,7 @@ const yesterdayPomos = useObservable(
     end.setHours(0, 0, 0, 0);
 
     return await db.pomo
-      .where('timestamp').between(today.toISOString(), tomorrow.toISOString())
+      .where('timestamp').between(start.toISOString(), end.toISOString())
       .toArray();
   })
 )
