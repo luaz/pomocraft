@@ -25,10 +25,10 @@ const state = reactive({
 })
 
 const modeText = computed(() => { 
-  if (state.mode == Mode.RUNNING) return 'Focus'
-  else if (state.mode == Mode.COMPLETED) return 'Take a break'
-  else if (state.mode == Mode.RESTING) return 'Taking a break'
-  else if (state.mode == Mode.IDLE) return "Ready"
+  if (state.mode == Mode.RUNNING) return '🎯 Focus'
+  else if (state.mode == Mode.COMPLETED) return '😌 Take a break'
+  else if (state.mode == Mode.RESTING) return '☕ Taking a break'
+  else if (state.mode == Mode.IDLE) return "🔥 Ready"
 })
 
 function changeMode() {
@@ -169,7 +169,7 @@ watch(() => state.timerText, (timerText) => {
 <template>
   <div class="flex w-48 py-4 px-4 rounded-md" :class="{ 'bg-slate-100': state.mode == Mode.IDLE, 'bg-lime-100': state.mode == Mode.RUNNING, 'bg-red-100': state.mode == Mode.COMPLETED, 'bg-orange-100': state.mode == Mode.RESTING }">
     <div class="flex-1 items-center justify-center">
-      <div class="text-center text-sm text-slate-500" :class="{ 'animate-blink': modeText == 'Ready' }">{{ modeText }}</div>
+      <div class="text-center text-sm text-slate-500">{{ modeText }}</div>
       <div class="text-center text-5xl font-medium dark:text-slate-500 w-32" :class="{ 'animate-blink': state.mode == Mode.COMPLETED  }">{{ state.timerText }}</div>
       <div class="flex justify-center">
         <div class="text-center text-sm text-slate-700 font-medium w-32 whitespace-nowrap overflow-hidden text-ellipsis">

@@ -5,6 +5,8 @@ const db = useDb()
 
 const state = reactive({
   todayPomo: 0,
+  motivationText: '',
+  showMotivationTextAnim: false,
 
   activeTask: null,
 
@@ -269,11 +271,47 @@ function formatListItemClass(item) {
   return ['dark:bg-slate-800']
 }
 
+const motivationTexts = [
+  "Procrastination is the thief of time.",
+  "The only way to do great work is to love what you do.",
+  "Success is the sum of small efforts repeated day in and day out.",
+  "The successful warrior is the average man, with laser-like focus.",
+  "Work during Focus Time, Procrastinate during Break Time"
+]
+let lastIndex = Math.floor(Math.random() * motivationTexts.length)
+
+state.motivationText = motivationTexts[lastIndex]
+state.showMotivationTextAnim = true
+
+function changeMotivationText() {
+  let randomIndex = Math.floor(Math.random() * motivationTexts.length)
+  while (lastIndex == randomIndex)
+    randomIndex = Math.floor(Math.random() * motivationTexts.length)
+
+  state.motivationText = motivationTexts[randomIndex]
+  state.showMotivationTextAnim = true
+
+  lastIndex = randomIndex
+
+
+}
+
+watch(() => state.motivationText, () => {
+  setTimeout(() => {
+    state.showMotivationTextAnim = false;
+  }, 1000 * 60 * 5 - 1000); // Adjust the timing to match the fade-out duration
+});
+
+onMounted(() => {
+  setInterval(changeMotivationText, 1000 * 60 * 5);
+})
+
 </script>
 
 <template>
   <div>
     <h1 class="text-2xl my-3">PomoCraft</h1>
+
     <div class="grid grid-flow-col gap-2 auto-cols-3 justify-center">
       <div>
         <UInput v-model="state.newTaskName" placeholder="Create a new task" @keyup.enter="createNewTask" />
@@ -336,7 +374,18 @@ function formatListItemClass(item) {
   <div>Today: {{ state.todayPomo }}</div>
 -->
 
+  <UAlert
+    class="my-5"
+  >
 
+    <template #title="{ title }">
+      <transition name="slide-fade">
+        <div class="flex items-center justify-center min-h-12">
+          <div v-if="state.showMotivationTextAnim" class="text-3xl font-normal text-orange-200 text-center"  v-html="state.motivationText" />
+        </div>
+      </transition>
+    </template>
+  </UAlert>
 
   <UModal v-model="state.showColorSelector">
     <div class="flex gap-2 p-4">
@@ -344,3 +393,19 @@ function formatListItemClass(item) {
     </div>
   </UModal>
 </template>
+
+<style scoped>
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+}
+</style>
