@@ -10,3 +10,8 @@ DEMO: https://pomocraft.luasoftware.com/
 nvm use 18
 npm run dev
 ```
+
+## TODO
+
+- Export IndexedDB: https://dexie.org/docs/ExportImport/dexie-export-import
+- Fix: Task projection select box has ticks

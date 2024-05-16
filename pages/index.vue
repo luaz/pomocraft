@@ -289,10 +289,14 @@ function formatListItemClass(item) {
                 /> 
               </UDropdown>
               <span v-if="state.editTaskId == task.id"><UInput v-model="state.editTaskName" placeholder="Project name" @keyup.enter="updateTask" /></span>
-              <div v-else class=" w-full">{{ task.name }} <span v-if="findProjects.has(task.projectId)" class="rounded-lg py-1 px-2 text-xs" :class="[`bg-${findProjects.get(task.projectId).colorId}`]">{{ findProjects.get(task.projectId).name }}</span> <div v-if="task.pomoCount" class="text-xs float-right">{{ task.pomoCount }} x 🍅 ({{ formatTime(task.secondCount) }})</div></div>
+              <div v-else class=" w-full">
+                <div v-if="task.pomoCount" class="ms-1 text-xs float-right">{{ task.pomoCount }} x 🍅 ({{ formatTime(task.secondCount) }})</div>
+                {{ task.name }} 
+                <span v-if="findProjects.has(task.projectId)" class="rounded-lg py-1 px-2 text-xs whitespace-nowrap" :class="[`bg-${findProjects.get(task.projectId).colorId}`]">{{ findProjects.get(task.projectId).name }}</span>
+              </div>
             </div>
             <div>
-              <USelectMenu v-if="state.editTaskProjectId != null && state.menuTaskItem?.id == task.id" :options="projects" v-model="state.editTaskProjectId" by="id" option-attribute="name" value-attribute="id" @change="updateTask">
+              <USelectMenu v-if="state.editTaskProjectId != null && state.menuTaskItem?.id == task.id" :options="projects" v-model="state.editTaskProjectId" option-attribute="name" value-attribute="id" @change="updateTask">
                 <template #option="{ option: project }">
                   <span class="size-4 rounded-full" :class="`bg-${project.colorId}`" /> {{ project.name }}
                 </template>

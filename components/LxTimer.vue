@@ -85,14 +85,14 @@ function updateTimer() {
           changeMode()
         }
       })
-      blinkTimerId = blinkTitle('[Break Time]',  '( -_-)')
+      blinkTimerId = blinkTitle('- Break Time -',  '☕')
     }
   }
   else if (state.mode == Mode.RESTING) {
     state.mode = Mode.IDLE
     if (seconds == -1) {
       playSound(startSound)
-      blinkTimerId = blinkTitle('[Ready]',  '(ง •̀_•́)ง')
+      blinkTimerId = blinkTitle('- Ready -',  '🟢')
     }
   }
 }
@@ -168,11 +168,13 @@ watch(() => state.timerText, (timerText) => {
 
 <template>
   <div class="flex w-48 py-4 px-4 rounded-md" :class="{ 'bg-slate-100': state.mode == Mode.IDLE, 'bg-lime-100': state.mode == Mode.RUNNING, 'bg-red-100': state.mode == Mode.COMPLETED, 'bg-orange-100': state.mode == Mode.RESTING }">
-    <div class="flex-1 justify-center">
-      <div class="text-center text-sm text-slate-500">{{ modeText }}</div>
-      <div class="text-center text-5xl font-medium dark:text-slate-500 w-32" :class="{ 'animate-blink': state.mode == Mode.COMPLETED}">{{ state.timerText }}</div>
-      <div class="text-center text-sm text-slate-700 font-medium text-ellipsis ">
-        {{ taskName || 'Select a Task' }}
+    <div class="flex-1 items-center justify-center">
+      <div class="text-center text-sm text-slate-500" :class="{ 'animate-blink': modeText == 'Ready' }">{{ modeText }}</div>
+      <div class="text-center text-5xl font-medium dark:text-slate-500 w-32" :class="{ 'animate-blink': state.mode == Mode.COMPLETED  }">{{ state.timerText }}</div>
+      <div class="flex justify-center">
+        <div class="text-center text-sm text-slate-700 font-medium w-32 whitespace-nowrap overflow-hidden text-ellipsis">
+          {{ taskName || 'Select a Task' }}
+        </div>
       </div>
     </div>
 
