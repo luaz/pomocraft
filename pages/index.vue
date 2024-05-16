@@ -4,7 +4,6 @@ import { useObservable } from "@vueuse/rxjs";
 const db = useDb()
 
 const state = reactive({
-  todayPomo: 0,
   motivationText: '',
   showMotivationTextAnim: false,
 
@@ -61,10 +60,70 @@ const todayPomos = useObservable(
   })
 )
 
+const yesterdayPomos = useObservable(
+  liveQuery(async () => {
+
+    const start = new Date(); // yesterday
+    start.setDate(start.getDate() - 1);
+    start.setHours(0, 0, 0, 0); 
+
+    const end = new Date(); // today
+    end.setHours(0, 0, 0, 0);
+
+    return await db.pomo
+      .where('timestamp').between(today.toISOString(), tomorrow.toISOString())
+      .toArray();
+  })
+)
+
+const weekPomos = useObservable(
+  liveQuery(async () => {
+
+    const start = new Date();
+    start.setDate(start.getDate() - 7);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date();
+    end.setHours(0, 0, 0, 0);
+
+    return await db.pomo
+      .where('timestamp').between(start.toISOString(), end.toISOString())
+      .toArray();
+  })
+)
+
 const todayPomoStat = computed(() => {
   let pomoCount = 0
   let secondCount = 0
   todayPomos?.value?.forEach(obj => {
+    pomoCount += obj.pomoCount
+    secondCount += obj.secondCount
+  })
+
+  return {
+    pomoCount,
+    secondCount
+  }
+})
+
+const yesterdayPomoStat = computed(() => {
+  let pomoCount = 0
+  let secondCount = 0
+  yesterdayPomos?.value?.forEach(obj => {
+    pomoCount += obj.pomoCount
+    secondCount += obj.secondCount
+  })
+
+  return {
+    pomoCount,
+    secondCount
+  }
+})
+
+const weekPomoStat = computed(() => {
+  let pomoCount = 0
+  let secondCount = 0
+  weekPomos?.value?.forEach(obj => {
     pomoCount += obj.pomoCount
     secondCount += obj.secondCount
   })
@@ -343,10 +402,12 @@ onMounted(() => {
           </div>
         </div>
       </div>
-      <div>
+      <div class="flex flex-col items-center min-w-60">
         <LxTimer @completed="addPomo" :taskName="state.activeTask?.name" />
         <div>
-          Today: {{  todayPomoStat.pomoCount }} x 🍅 ({{ formatTime(todayPomoStat.secondCount) }})
+          <div class="flex"><div class="min-w-20 text-right me-2">Today:</div> {{  todayPomoStat.pomoCount }} x 🍅 ({{ formatTime(todayPomoStat.secondCount) }})</div>
+          <div class="flex"><div class="min-w-20 text-right me-2">Yesterday:</div> {{  yesterdayPomoStat.pomoCount }} x 🍅 ({{ formatTime(yesterdayPomoStat.secondCount) }})</div>
+          <div class="flex"><div class="min-w-20 text-right me-2">1 Week:</div> {{  weekPomoStat.pomoCount }} x 🍅 ({{ formatTime(weekPomoStat.secondCount) }})</div>
         </div>
       </div>
       <div>
@@ -369,23 +430,19 @@ onMounted(() => {
     </div>
   </div>
 
-  <!--
-  <UButton @click="refreshPomoCount">Refresh Pomo</UButton> 
-  <div>Today: {{ state.todayPomo }}</div>
--->
-
-  <UAlert
-    class="my-5"
-  >
-
-    <template #title="{ title }">
-      <transition name="slide-fade">
-        <div class="flex items-center justify-center min-h-12">
-          <div v-if="state.showMotivationTextAnim" class="text-3xl font-normal text-orange-200 text-center"  v-html="state.motivationText" />
-        </div>
-      </transition>
-    </template>
-  </UAlert>
+  <client-only>
+    <UAlert
+      class="my-5"
+    >
+      <template #title="{ title }">
+        <transition name="slide-fade">
+          <div class="flex items-center justify-center min-h-12">
+            <div v-if="state.showMotivationTextAnim" class="text-2xl font-normal text-orange-200 text-center"  v-html="state.motivationText" />
+          </div>
+        </transition>
+      </template>
+    </UAlert>
+  </client-only>
 
   <UModal v-model="state.showColorSelector">
     <div class="flex gap-2 p-4">
