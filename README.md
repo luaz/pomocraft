@@ -17,4 +17,4 @@ npm run dev
 - Task add description/note
 - Highlght active task
 - Swap task half way
-- Make sure timer accurate by using start time
+- Show average pomodoro per day for the last 30 days

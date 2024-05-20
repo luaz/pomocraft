@@ -455,25 +455,6 @@ watch(modalCarouselRef, async (ref) => {
 })
  */
 
-const onModalUpdate = (value) => {
-  // console.log(value)
-  if (value) {
-    console.log('Modal is shown');
-  } else {
-    console.log('Modal is hidden');
-  }
-};
-
-watch(() => state.showFocusModal, (showFocusModal) => {
-  if (showFocusModal) {
-    nextTick(() => {
-      modalCarouselRef.value.next()
-    })
-    // modalCarouselRef.value.next()
-  }
-})
-
-
 /*
 watch(() => state.showFocusModal, (showFocusModal) => {
   if (showFocusModal) {
@@ -607,14 +588,14 @@ watch(modalCarouselRef, async (el) => {
     </UCarousel>
   </client-only>
 
-  <UModal v-model="state.showFocusModal" @update:modelValue="onModalUpdate">
+  <UModal v-model="state.showFocusModal">
     <div class="p-5">
       <UMeter size="md"  :value="state.focusProgress * 100" class="my-3">
         <template #indicator="{ value }">
           <div class="text-center">
 
-            <p v-if="value < 100">Forging a meaningful journey ...</p>
-            <p v-else class="animate-blink">Take a break</p>
+            <p v-if="value < 100">⚒️ Forging a meaningful life 🌟</p>
+            <p v-else class="animate-blink">☕ You deserve a break</p>
             <!--
             <p class="text-gray-500 dark:text-gray-400">
               {{ value }}

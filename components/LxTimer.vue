@@ -16,6 +16,7 @@ const Mode = {
 
 let timerId = null
 let seconds = 0
+let timerStartTime = null
 const POMO_FOCUS_SECONDS = process.dev ? 10 : 60 * 25
 const POMO_REST_SECONDS = process.dev ? 5 : 60 * 5
 
@@ -42,10 +43,13 @@ function changeMode() {
       alert('Select a Task')
       return
     }
-    state.mode = Mode.RUNNING
-    seconds = POMO_FOCUS_SECONDS
     if (timerId)
        clearInterval(timerId)
+
+    state.mode = Mode.RUNNING
+    seconds = POMO_FOCUS_SECONDS
+    timerStartTime = new Date()
+
     timerId = setInterval(updateTimer, 1000)
 
   }
@@ -57,15 +61,19 @@ function changeMode() {
     timerId = null
   }
   else if (state.mode == Mode.COMPLETED) {
+    if (timerId)
+       clearInterval(timerId) 
+
     seconds = POMO_REST_SECONDS
+    timerStartTime = new Date()
     state.timerText = formatTime(seconds)
     state.mode = Mode.RESTING
+
     if (notification) {
       notification.close()
       notification = null
     }
-    if (timerId)
-       clearInterval(timerId)    
+   
     timerId = setInterval(updateTimer, 1000)
     emit('completed', 1, POMO_FOCUS_SECONDS)
   }
@@ -73,6 +81,16 @@ function changeMode() {
 
 function updateTimer() {
   seconds--
+  if (seconds > 0) {
+    if (state.mode ==  Mode.RUNNING || state.mode == Mode.RESTING) {
+      const realSeconds = (state.mode ==  Mode.RUNNING ? POMO_FOCUS_SECONDS : POMO_REST_SECONDS) - Math.ceil((new Date() - timerStartTime) / 1000)
+      if (Math.abs(realSeconds - seconds) >= 2) {
+        console.log(`Adjust ${seconds} => ${realSeconds}`)
+        seconds = realSeconds
+      }
+    }
+  }
+
   if (state.mode == Mode.RUNNING && seconds >= 0) {
     const progress = (POMO_FOCUS_SECONDS - seconds) / POMO_FOCUS_SECONDS
     emit('focusProgress', progress)
