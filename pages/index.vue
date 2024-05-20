@@ -83,10 +83,10 @@ const weekPomos = useObservable(
 
     const start = new Date();
     start.setDate(start.getDate() - 7);
-    start.setHours(0, 0, 0, 0);
+    // start.setHours(0, 0, 0, 0);
 
     const end = new Date();
-    end.setHours(0, 0, 0, 0);
+    // end.setHours(0, 0, 0, 0);
 
     return await db.pomo
       .where('timestamp').between(start.toISOString(), end.toISOString())
@@ -509,8 +509,8 @@ watch(modalCarouselRef, async (el) => {
       <div>
         <UInput v-model="state.newTaskName" placeholder="Create a new task" @keyup.enter="createNewTask" />
         <div v-for="task in tasks" :key="task.id">
-          <div class="p-2 my-2 dark:bg-slate-800 rounded-md" :class="{ 'dark:bg-gray-500': state.activeTask?.id == task.id }">
-            <div class="flex items-center">
+          <div class="p-2 my-2 rounded-md" :class="[(state.activeTask?.id == task.id) ? 'dark:bg-gray-700': 'dark:bg-slate-800' ]">
+            <div class="flex items-center" >
               <UDropdown :items="taskMenuItems" :popper="{ placement: 'bottom-start' }" @click="state.menuTaskItem = task">
                 <UButton
                   :padded="false"
@@ -556,8 +556,13 @@ watch(modalCarouselRef, async (el) => {
                 icon="i-heroicons-ellipsis-vertical"
               /> 
             </UDropdown>
-            <span v-if="state.editProjectId == project.id"><UInput v-model="state.editProjectName" placeholder="Project name" @keyup.enter="updateProject" /></span>
-            <div v-else class=" w-full">{{ project.name }} <div v-if="project.pomoCount" class="text-xs float-right">{{  project.pomoCount }} x 🍅 ({{ formatTime(project.secondCount) }})</div></div>
+            <span v-if="state.editProjectId == project.id">
+              <UInput v-model="state.editProjectName" placeholder="Project name" @keyup.enter="updateProject" />
+            </span>
+            <div v-else class=" w-full">
+              <div v-if="project.pomoCount" class="ms-1 text-xs float-right">{{  project.pomoCount }} x 🍅 ({{ formatTime(project.secondCount) }})</div>
+              {{ project.name }} 
+            </div>
           </div>
         </div>
       </div>
