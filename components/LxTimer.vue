@@ -4,7 +4,7 @@ import startSound from "~/assets/sounds/start.ogg";
   
 const props = defineProps(['taskName'])
 
-const emit = defineEmits(['completed'])
+const emit = defineEmits(['completed', 'focusProgress'])
 
 const Mode = {
   IDLE: 1,
@@ -73,6 +73,12 @@ function changeMode() {
 
 function updateTimer() {
   seconds--
+  if (state.mode == Mode.RUNNING && seconds >= 0) {
+    const progress = (POMO_FOCUS_SECONDS - seconds) / POMO_FOCUS_SECONDS
+    emit('focusProgress', progress)
+  }
+  
+
   if (seconds >= 0) {
     state.timerText = formatTime(seconds) 
   }
@@ -162,6 +168,12 @@ watch(() => state.timerText, (timerText) => {
     document.title = `[B] ${timerText}`
   else
     document.title = timerText
+})
+
+watch(() => state.mode, (mode) => {
+  if (mode != Mode.RUNNING && mode != Mode.COMPLETED) {
+    emit('focusProgress', -1)
+  }
 })
 
 </script>

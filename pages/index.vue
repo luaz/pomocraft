@@ -4,8 +4,10 @@ import { useObservable } from "@vueuse/rxjs";
 const db = useDb()
 
 const state = reactive({
-  motivationText: '',
-  showMotivationTextAnim: false,
+  // motivationText: '',
+  // showMotivationTextAnim: false,
+  showFocusModal: false,
+  focusProgress: 0,
 
   activeTask: null,
 
@@ -420,7 +422,8 @@ const motivationItems = [
   }
 ]
 
-const carouselRef = ref()
+const carouselRef = ref(null)
+const modalCarouselRef = ref(null)
 
 onMounted(() => {
   setInterval(() => {
@@ -433,6 +436,68 @@ onMounted(() => {
     carouselRef.value.next()
   }, 1000 * 60 * 5)
 })
+
+function showFocusModal() {
+  state.showFocusModal = true
+}
+
+/*
+watch(modalCarouselRef, async (ref) => {
+  if (ref) {
+    await nextTick()
+    await nextTick()
+    await nextTick()
+    carouselRef.value.next()
+    modalCarouselRef.value.next()
+    await nextTick()
+    // console.log('select', modalCarouselRef.value.page)
+  }
+})
+ */
+
+const onModalUpdate = (value) => {
+  // console.log(value)
+  if (value) {
+    console.log('Modal is shown');
+  } else {
+    console.log('Modal is hidden');
+  }
+};
+
+watch(() => state.showFocusModal, (showFocusModal) => {
+  if (showFocusModal) {
+    nextTick(() => {
+      modalCarouselRef.value.next()
+    })
+    // modalCarouselRef.value.next()
+  }
+})
+
+
+/*
+watch(() => state.showFocusModal, (showFocusModal) => {
+  if (showFocusModal) {
+    console.log(modalCarouselRef.value)
+    nextTick(() => {
+      modalCarouselRef.value.next()
+    })
+    // modalCarouselRef.value.next()
+  }
+})
+ */
+
+watch(modalCarouselRef, async (el) => {
+  if (el) {
+    /*
+    nextTick(() => {
+       console.log(el.page, el.pages)
+    })
+     */    
+    await new Promise(resolve => setTimeout(resolve, 100));
+    el.select(carouselRef.value.page)
+  }
+})
+
 
 </script>
 
@@ -472,7 +537,7 @@ onMounted(() => {
         </div>
       </div>
       <div class="flex flex-col items-center min-w-60">
-        <LxTimer @completed="addPomo" :taskName="state.activeTask?.name" />
+        <LxTimer @completed="addPomo" :taskName="state.activeTask?.name" @focusProgress="(value) => state.focusProgress = value" /> 
         <div>
           <div class="flex"><div class="min-w-20 text-right me-2">Today:</div> {{  todayPomoStat.pomoCount }} x 🍅 ({{ formatTime(todayPomoStat.secondCount) }})</div>
           <div class="flex"><div class="min-w-20 text-right me-2">Yesterday:</div> {{  yesterdayPomoStat.pomoCount }} x 🍅 ({{ formatTime(yesterdayPomoStat.secondCount) }})</div>
@@ -515,17 +580,50 @@ onMounted(() => {
   </client-only>
    -->
 
-  <UCarousel ref="carouselRef" v-slot="{ item }" :items="motivationItems" :ui="{ item: 'w-full' }" indicators>
-    <UAlert>
-      <template #description>
-        <div class="flex flex-col items-center justify-center mb-8">
-          <div class="flex items-center text-2xl font-semibold text-orange-100 my-3 min-h-12">{{ item.text }}</div> 
-          <div class="text-sm my-3">{{ item.author }}</div>
-        </div>
-      </template>
-    </UAlert>
-  </UCarousel>
+  <client-only>
+    <UCarousel ref="carouselRef" v-slot="{ item }" :items="motivationItems" :ui="{ item: 'w-full' }" indicators>
+      <UAlert>
+        <template #description>
+          <UButton
+            class="float-right"
+            :padded="false"
+            color="gray"
+            variant="link"
+            icon="i-heroicons-arrows-pointing-out"
+            @click="showFocusModal"
+          />
 
+          <div class="flex flex-col items-center justify-center mb-8">
+            <div class="flex items-center text-2xl font-semibold text-orange-100 my-3 min-h-12">{{ item.text }}</div> 
+            <div class="text-sm my-3">{{ item.author }}</div>
+          </div>
+        </template>
+      </UAlert>
+    </UCarousel>
+  </client-only>
+
+  <UModal v-model="state.showFocusModal" @update:modelValue="onModalUpdate">
+    <div class="p-5">
+      <UMeter size="md"  :value="state.focusProgress * 100" class="my-3">
+        <template #indicator="{ value }">
+          <div class="text-center">
+
+            <p v-if="value < 100">Forging a meaningful journey ...</p>
+            <p v-else class="animate-blink">Take a break</p>
+            <!--
+            <p class="text-gray-500 dark:text-gray-400">
+              {{ value }}
+            </p>
+             -->
+          </div>
+        </template>
+      </UMeter>
+
+      <UCarousel ref="modalCarouselRef" v-slot="{ item }" :items="motivationItems" :ui="{ item: 'w-full' }" indicators>
+        <img :src="`/img/quote/${item.src}`" width="1080" height="1080">
+      </UCarousel>
+    </div>
+  </UModal>
 
   <UModal v-model="state.showColorSelector">
     <div class="flex gap-2 p-4">
@@ -533,19 +631,3 @@ onMounted(() => {
     </div>
   </UModal>
 </template>
-
-<style scoped>
-.slide-fade-enter-active {
-  transition: all 0.3s ease-out;
-}
-
-.slide-fade-leave-active {
-  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
-}
-
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-  transform: translateX(20px);
-  opacity: 0;
-}
-</style>
