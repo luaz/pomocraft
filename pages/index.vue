@@ -567,25 +567,29 @@ watch(modalCarouselRef, async (el) => {
    -->
 
   <client-only>
+
+  <div class="relative">
     <UCarousel ref="carouselRef" v-slot="{ item }" :items="motivationItems" :ui="{ item: 'w-full' }" indicators>
       <UAlert>
         <template #description>
-          <UButton
-            class="float-right"
-            :padded="false"
-            color="gray"
-            variant="link"
-            icon="i-heroicons-arrows-pointing-out"
-            @click="showFocusModal"
-          />
-
           <div class="flex flex-col items-center justify-center mb-8">
-            <div class="flex items-center text-2xl font-semibold text-orange-100 my-3 min-h-12">{{ item.text }}</div> 
+            <div class="flex items-center text-center text-2xl font-semibold text-orange-100 my-3 min-h-24">{{ item.text }}</div> 
             <div class="text-sm my-3">{{ item.author }}</div>
           </div>
         </template>
       </UAlert>
-    </UCarousel>
+    </UCarousel>    
+
+    <UButton
+      class="absolute top-0 right-0 m-3"
+      :padded="false"
+      color="gray"
+      variant="link"
+      icon="i-heroicons-arrows-pointing-out"
+      @click="showFocusModal"
+    />
+  </div>
+
   </client-only>
 
   <UModal v-model="state.showFocusModal">

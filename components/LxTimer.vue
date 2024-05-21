@@ -87,6 +87,9 @@ function updateTimer() {
       if (Math.abs(realSeconds - seconds) >= 2) {
         console.log(`Adjust ${seconds} => ${realSeconds}`)
         seconds = realSeconds
+        if (seconds < 0) {
+          seconds = 0
+        }
       }
     }
   }
