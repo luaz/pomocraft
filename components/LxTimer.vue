@@ -1,6 +1,7 @@
 <script setup>
 import completeSound from "~/assets/sounds/complete.ogg";
 import startSound from "~/assets/sounds/start.ogg";
+import pingSound from "~/assets/sounds/ping.ogg";
   
 const props = defineProps(['taskName'])
 
@@ -16,8 +17,9 @@ const Mode = {
 
 let timerId = null
 let seconds = 0
+let pingCount = 0
 let timerStartTime = null
-const POMO_FOCUS_SECONDS = process.dev ? 10 : 60 * 25
+const POMO_FOCUS_SECONDS = process.dev ? 20 : 60 * 25
 const POMO_REST_SECONDS = process.dev ? 5 : 60 * 5
 
 const state = reactive({ 
@@ -55,6 +57,7 @@ function changeMode() {
   }
   else if (state.mode == Mode.RUNNING) {
     seconds = POMO_FOCUS_SECONDS
+    pingCount = 0
     state.timerText = formatTime(seconds) 
     state.mode = Mode.IDLE
     clearInterval(timerId)
@@ -87,7 +90,7 @@ function updateTimer() {
       if (Math.abs(realSeconds - seconds) >= 2) {
         console.log(`Adjust ${seconds} => ${realSeconds}`)
         seconds = realSeconds
-        if (seconds < 0) {
+        if (seconds < 0) { // to avoid funny ui issues
           seconds = 0
         }
       }
@@ -96,6 +99,12 @@ function updateTimer() {
 
   if (state.mode == Mode.RUNNING && seconds >= 0) {
     const progress = (POMO_FOCUS_SECONDS - seconds) / POMO_FOCUS_SECONDS
+    // console.log(progress, '>', pingCount * (0.2))
+    if (progress >= pingCount * 0.2 && progress < 1) {
+      // console.log('ping', progress)
+      pingCount++
+      playSound(pingSound)
+    }
     emit('focusProgress', progress)
   }
   

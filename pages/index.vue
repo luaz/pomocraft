@@ -573,7 +573,7 @@ watch(modalCarouselRef, async (el) => {
       <UAlert>
         <template #description>
           <div class="flex flex-col items-center justify-center mb-8">
-            <div class="flex items-center text-center text-2xl font-semibold text-orange-100 my-3 min-h-24">{{ item.text }}</div> 
+            <div class="flex items-center text-center text-2xl font-semibold text-orange-100 my-3 p-3s min-h-24">{{ item.text }}</div> 
             <div class="text-sm my-3">{{ item.author }}</div>
           </div>
         </template>
@@ -594,11 +594,23 @@ watch(modalCarouselRef, async (el) => {
 
   <UModal v-model="state.showFocusModal">
     <div class="p-5">
-      <UMeter size="md"  :value="state.focusProgress * 100" class="my-3">
+      <UMeter size="md" :value="state.focusProgress * 100" class="my-3">
         <template #indicator="{ value }">
           <div class="text-center">
 
-            <p v-if="value < 100">⚒️ Forging a meaningful life 🌟</p>
+            <p v-if="value == -100">🎯 Focus, you must. 🧘</p>
+            <p v-else-if="value < 100" class="flex gap-1 justify-center">
+              <template v-if="value < 30">
+                <div class="animate-rock">⚒️</div> 
+                Forging a meaningful life
+                <div class="animate-fade-in-out">✨</div>
+              </template >
+              <template v-else>
+                <div class="animate-fade-in-out">🎯</div> 
+                Focus, you must.
+                <div class="animate-fade-in-out">🧘</div>
+              </template>
+            </p>
             <p v-else class="animate-blink">☕ You deserve a break</p>
             <!--
             <p class="text-gray-500 dark:text-gray-400">
@@ -621,3 +633,26 @@ watch(modalCarouselRef, async (el) => {
     </div>
   </UModal>
 </template>
+
+<style scoped>
+@keyframes rock {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(30deg); }
+    50% { transform: rotate(0deg); }
+    75% { transform: rotate(-30deg); }
+    100% { transform: rotate(0deg); }
+}
+
+.animate-rock {
+    animation: rock 2.5s infinite;
+}
+
+@keyframes fadeInOut {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+}
+
+.animate-fade-in-out {
+    animation: fadeInOut 8s infinite;
+}
+</style>
