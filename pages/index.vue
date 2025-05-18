@@ -568,6 +568,7 @@ watch(modalCarouselRef, async (el) => {
 
   <client-only>
 
+  <!--
   <div class="relative">
     <UCarousel ref="carouselRef" v-slot="{ item }" :items="motivationItems" :ui="{ item: 'w-full' }" indicators>
       <UAlert>
@@ -589,9 +590,11 @@ watch(modalCarouselRef, async (el) => {
       @click="showFocusModal"
     />
   </div>
+   -->
 
   </client-only>
 
+  <!--
   <UModal v-model="state.showFocusModal">
     <div class="p-5">
       <UMeter size="md" :value="state.focusProgress * 100" class="my-3">
@@ -612,11 +615,6 @@ watch(modalCarouselRef, async (el) => {
               </template>
             </p>
             <p v-else class="animate-blink">☕ You deserve a break</p>
-            <!--
-            <p class="text-gray-500 dark:text-gray-400">
-              {{ value }}
-            </p>
-             -->
           </div>
         </template>
       </UMeter>
@@ -626,6 +624,7 @@ watch(modalCarouselRef, async (el) => {
       </UCarousel>
     </div>
   </UModal>
+   -->
 
   <UModal v-model="state.showColorSelector">
     <div class="flex gap-2 p-4">
