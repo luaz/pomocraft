@@ -6,8 +6,10 @@ const db = useDb()
 const state = reactive({
   // motivationText: '',
   // showMotivationTextAnim: false,
-  showFocusModal: false,
+  // showFocusModal: false,
+  showFocus: false,
   focusProgress: 0,
+  timerText: '',
 
   activeTask: null,
 
@@ -24,6 +26,8 @@ const state = reactive({
 
   showColorSelector: false,
 })  
+
+const timerRef = ref(null);
 
 async function addPomo(pomoCount, secondCount) {
   const data = { 
@@ -369,6 +373,7 @@ onMounted(() => {
 })
  */
 
+/*
 const motivationItems = [
   {
     text: 'Procrastination is the thief of time.',
@@ -425,6 +430,7 @@ const motivationItems = [
 const carouselRef = ref(null)
 const modalCarouselRef = ref(null)
 
+
 onMounted(() => {
   setInterval(() => {
     if (!carouselRef.value) return
@@ -436,10 +442,13 @@ onMounted(() => {
     carouselRef.value.next()
   }, 1000 * 60 * 5)
 })
+ */
 
+/*
 function showFocusModal() {
   state.showFocusModal = true
 }
+ */
 
 /*
 watch(modalCarouselRef, async (ref) => {
@@ -467,22 +476,26 @@ watch(() => state.showFocusModal, (showFocusModal) => {
 })
  */
 
+/*
 watch(modalCarouselRef, async (el) => {
-  if (el) {
-    /*
-    nextTick(() => {
-       console.log(el.page, el.pages)
-    })
-     */    
+  if (el) {   
     await new Promise(resolve => setTimeout(resolve, 100));
     el.select(carouselRef.value.page)
   }
 })
-
+ */
 
 </script>
 
 <template>
+  <LxFocus v-if="state.showFocus" 
+  :progress="state.focusProgress" 
+  :timerText="state.timerText" 
+  :taskName="state.activeTask?.name"
+  @closed="state.showFocus = false"
+  @completed="state.showFocus = false; timerRef.changeMode()"
+   />
+
   <div>
     <h1 class="text-2xl my-3">PomoCraft</h1>
 
@@ -518,7 +531,14 @@ watch(modalCarouselRef, async (el) => {
         </div>
       </div>
       <div class="flex flex-col items-center min-w-60">
-        <LxTimer @completed="addPomo" :taskName="state.activeTask?.name" @focusProgress="(value) => state.focusProgress = value" /> 
+        <LxTimer 
+          ref="timerRef"
+          :taskName="state.activeTask?.name" 
+          @completed="addPomo" 
+          @startFocus="state.showFocus = true" 
+          @focusProgress="(value) => state.focusProgress = value" 
+          @timerText="(value) => state.timerText = value" /> 
+
         <div>
           <div class="flex"><div class="min-w-20 text-right me-2">Today:</div> {{  todayPomoStat.pomoCount }} x 🍅 ({{ formatTime(todayPomoStat.secondCount) }})</div>
           <div class="flex"><div class="min-w-20 text-right me-2">Yesterday:</div> {{  yesterdayPomoStat.pomoCount }} x 🍅 ({{ formatTime(yesterdayPomoStat.secondCount) }})</div>

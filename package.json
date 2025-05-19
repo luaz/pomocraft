@@ -11,6 +11,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@nuxt/image": "^1.10.0",
     "@nuxt/ui": "^2.16.0",
     "@vueuse/rxjs": "^10.9.0",
     "dexie": "^4.0.4",

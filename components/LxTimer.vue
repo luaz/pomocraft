@@ -5,7 +5,7 @@ import pingSound from "~/assets/sounds/ping.ogg";
   
 const props = defineProps(['taskName'])
 
-const emit = defineEmits(['completed', 'focusProgress'])
+const emit = defineEmits(['completed', 'focusProgress', 'startFocus', 'started', 'timerText'])
 
 const Mode = {
   IDLE: 1,
@@ -19,7 +19,7 @@ let timerId = null
 let seconds = 0
 let pingCount = 0
 let timerStartTime = null
-const POMO_FOCUS_SECONDS = process.dev ? 20 : 60 * 25
+const POMO_FOCUS_SECONDS = process.dev ? 60 : 60 * 25
 const POMO_REST_SECONDS = process.dev ? 5 : 60 * 5
 
 const state = reactive({ 
@@ -53,6 +53,7 @@ function changeMode() {
     timerStartTime = new Date()
 
     timerId = setInterval(updateTimer, 1000)
+    emit('startFocus')
 
   }
   else if (state.mode == Mode.RUNNING) {
@@ -194,6 +195,7 @@ function blinkTitle(title, filler) {
 }
 
 watch(() => state.timerText, (timerText) => { 
+  emit('timerText', timerText)
   if (state.mode == Mode.RESTING)
     document.title = `[B] ${timerText}`
   else
@@ -206,12 +208,15 @@ watch(() => state.mode, (mode) => {
   }
 })
 
+defineExpose({ changeMode })
+
 </script>
 
 <template>
   <div class="flex w-48 py-4 px-4 rounded-md" :class="{ 'bg-slate-100': state.mode == Mode.IDLE, 'bg-lime-100': state.mode == Mode.RUNNING, 'bg-red-100': state.mode == Mode.COMPLETED, 'bg-orange-100': state.mode == Mode.RESTING }">
     <div class="flex-1 items-center justify-center">
-      <div class="text-center text-sm text-slate-500">{{ modeText }}</div>
+      <div v-if="state.mode == Mode.RUNNING" class="text-center text-sm text-slate-500 cursor-pointer" @click="emit('startFocus')">{{ modeText }}</div>
+      <div v-else class="text-center text-sm text-slate-500" >{{ modeText }}</div>
       <div class="text-center text-5xl font-medium dark:text-slate-500 w-32" :class="{ 'animate-blink': state.mode == Mode.COMPLETED  }">{{ state.timerText }}</div>
       <div class="flex justify-center">
         <div class="text-center text-sm text-slate-700 font-medium w-32 whitespace-nowrap overflow-hidden text-ellipsis">
