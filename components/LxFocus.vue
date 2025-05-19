@@ -123,7 +123,7 @@ onBeforeUnmount(() => {
           <div class="absolute top-0 left-1/2 transform -translate-x-1/2 mt-2">
             <div class="py-3">
               <div class="relative w-full h-24 overflow-hidden">
-                <NuxtImg
+                <img
                   src="/img/anim/girl-mining.gif"
                   alt="Moving"
                   class="absolute top-0 h-24 transition-transform duration-300"

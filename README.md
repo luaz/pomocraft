@@ -7,7 +7,7 @@ DEMO: https://pomocraft.luasoftware.com/
 ## Dev
 
 ```
-nvm use 18
+nvm use 20
 npm run dev
 ```
 
