@@ -38,7 +38,7 @@ watch(
   () => props.progress,
   (newProgress) => {
     if (newProgress == 1) {
-      bgImgSrc.value = `/img/done/${genRandomImageId(7)}.jpg`
+      bgImgSrc.value = `/img/done/${genRandomImageId(13)}.jpg`
     }
   }
 )
