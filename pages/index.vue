@@ -247,6 +247,14 @@ const projects = useObservable(
   }),
 );
 
+const projectItems = computed(() => {
+  return (projects.value || []).map(({ id, name, colorId }) => ({
+    id,
+    label: name,
+    colorId,
+  }));
+});
+
 const findProjects = computed(() => {
   return new Map(projects?.value?.map((item) => [item.id, item]));
 });
@@ -429,22 +437,21 @@ function formatListItemClass(item) {
               </div>
               <div>
                 <USelectMenu
+                  class="w-full"
                   v-if="
                     state.editTaskProjectId != null &&
                     state.menuTaskItem?.id == task.id
                   "
-                  :options="projects"
+                  :items="projectItems"
                   v-model="state.editTaskProjectId"
-                  option-attribute="name"
-                  value-attribute="id"
+                  value-key="id"
                   @change="updateTask"
                 >
-                  <template #option="{ option: project }">
+                  <template #item-leading="{ item }">
                     <span
                       class="size-4 rounded-full"
-                      :class="`bg-${project.colorId}`"
+                      :class="`bg-${item.colorId}`"
                     />
-                    {{ project.name }}
                   </template>
                 </USelectMenu>
               </div>
