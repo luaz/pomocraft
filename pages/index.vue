@@ -6,6 +6,7 @@ defineOptions({
   inheritAttrs: false,
 });
 const db = useDb();
+const { public: publicConfig } = useRuntimeConfig();
 
 const state = reactive({
   // motivationText: '',
@@ -243,7 +244,16 @@ async function updateProject() {
 
 const projects = useObservable(
   liveQuery(async () => {
-    return await db.project.where("active").equals(1).toArray();
+    const items = await db.project.toArray();
+    return items.sort((a, b) => {
+      const activeDelta = (b.active ?? 0) - (a.active ?? 0);
+      if (activeDelta !== 0) return activeDelta;
+
+      const pomoDelta = (b.pomoCount ?? 0) - (a.pomoCount ?? 0);
+      if (pomoDelta !== 0) return pomoDelta;
+
+      return (a.name || "").localeCompare(b.name || "");
+    });
   }),
 );
 
@@ -259,29 +269,34 @@ const findProjects = computed(() => {
   return new Map(projects?.value?.map((item) => [item.id, item]));
 });
 
-const projectMenuItems = [
-  [
-    {
-      label: "Edit",
-      onSelect: async () => {
-        state.editProjectId = state.menuProjectItem.id;
-        state.editProjectName = state.menuProjectItem.name;
+function getProjectMenuItems(project) {
+  return [
+    [
+      {
+        label: "Edit",
+        onSelect: async () => {
+          state.editProjectId = project.id;
+          state.editProjectName = project.name;
+        },
       },
-    },
-    {
-      label: "Color",
-      onSelect: () => {
-        state.showColorSelector = true;
+      {
+        label: "Color",
+        onSelect: () => {
+          state.menuProjectItem = project;
+          state.showColorSelector = true;
+        },
       },
-    },
-    {
-      label: "Delete",
-      onSelect: async () => {
-        await db.project.update(state.menuProjectItem.id, { active: 0 });
+      {
+        label: project.active === 0 ? "Undelete" : "Delete",
+        onSelect: async () => {
+          await db.project.update(project.id, {
+            active: project.active === 0 ? 1 : 0,
+          });
+        },
       },
-    },
-  ],
-];
+    ],
+  ];
+}
 
 const colorOptions = [
   {
@@ -360,10 +375,19 @@ async function selectColor(colorId) {
 }
 
 function formatListItemClass(item) {
+  const classes = [];
+
   if (item.colorId) {
-    return [`bg-${item.colorId}`];
+    classes.push(`bg-${item.colorId}`);
+  } else {
+    classes.push("dark:bg-slate-800");
   }
-  return ["dark:bg-slate-800"];
+
+  if (item.active === 0) {
+    classes.push("opacity-50");
+  }
+
+  return classes;
 }
 </script>
 
@@ -382,7 +406,10 @@ function formatListItemClass(item) {
     />
 
     <div>
-      <h1 class="text-2xl my-3">PomoCraft</h1>
+      <h1 class="text-2xl my-3">
+        PomoCraft
+        <span class="ms-2 text-sm text-slate-500 align-middle">v{{ publicConfig.appVersion }}</span>
+      </h1>
 
       <div class="grid grid-flow-col gap-2 auto-cols-3 justify-center">
         <div>
@@ -502,7 +529,7 @@ function formatListItemClass(item) {
               :class="formatListItemClass(project)"
             >
               <UDropdownMenu
-                :items="projectMenuItems"
+                :items="getProjectMenuItems(project)"
                 :content="{ side: 'bottom', align: 'start' }"
               >
                 <UButton
