@@ -2,6 +2,9 @@
 import completeSound from "~/assets/sounds/complete.ogg";
 import startSound from "~/assets/sounds/start.ogg";
 import pingSound from "~/assets/sounds/ping.ogg";
+defineOptions({
+  inheritAttrs: false,
+});
   
 const props = defineProps(['taskName'])
 
@@ -213,7 +216,7 @@ defineExpose({ changeMode })
 </script>
 
 <template>
-  <div class="flex w-48 py-4 px-4 rounded-md" :class="{ 'bg-slate-100': state.mode == Mode.IDLE, 'bg-lime-100': state.mode == Mode.RUNNING, 'bg-red-100': state.mode == Mode.COMPLETED, 'bg-orange-100': state.mode == Mode.RESTING }">
+  <div v-bind="$attrs" class="flex w-48 py-4 px-4 rounded-md" :class="{ 'bg-slate-100': state.mode == Mode.IDLE, 'bg-lime-100': state.mode == Mode.RUNNING, 'bg-red-100': state.mode == Mode.COMPLETED, 'bg-orange-100': state.mode == Mode.RESTING }">
     <div class="flex-1 items-center justify-center">
       <div v-if="state.mode == Mode.RUNNING" class="text-center text-sm text-slate-500 cursor-pointer" @click="emit('startFocus')">{{ modeText }}</div>
       <div v-else class="text-center text-sm text-slate-500" >{{ modeText }}</div>

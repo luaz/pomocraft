@@ -1,4 +1,7 @@
 <script setup>
+defineOptions({
+  inheritAttrs: false,
+});
 const props = defineProps({
   taskName: {
     type: String,
@@ -78,7 +81,7 @@ onBeforeUnmount(() => {
 
 
 <template>
-  <div class="fixed inset-0 bg-black z-[1000]">
+  <div v-bind="$attrs" class="fixed inset-0 bg-black z-[1000]">
 
     <button
       @click="$emit('closed')"

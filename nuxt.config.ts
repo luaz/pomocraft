@@ -5,7 +5,7 @@ export default defineNuxtConfig({
       title: 'PomoCraft'
     }
   },
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   modules: ["@nuxt/ui", "@nuxt/image"],
   tailwindcss: {
     cssPath: '~/assets/styles/tailwind.css',
