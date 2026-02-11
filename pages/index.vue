@@ -1,6 +1,7 @@
 <script setup>
 import { liveQuery } from "dexie";
 import { useObservable } from "@vueuse/rxjs";
+import { bg } from "@nuxt/ui/runtime/locale/index.js";
 defineOptions({
   inheritAttrs: false,
 });
@@ -277,54 +278,71 @@ const projectMenuItems = [
 const colorOptions = [
   {
     id: "red-500",
+    bg: "bg-red-500",
   },
   {
     id: "orange-500",
+    bg: "bg-orange-500",
   },
   {
     id: "amber-500",
+    bg: "bg-amber-500",
   },
   {
     id: "yellow-500",
+    bg: "bg-yellow-500",
   },
   {
     id: "lime-500",
+    bg: "bg-lime-500",
   },
   {
     id: "green-500",
+    bg: "bg-green-500",
   },
   {
     id: "emerald-500",
+    bg: "bg-emerald-500",
   },
   {
     id: "teal-500",
+    bg: "bg-teal-500",
   },
   {
     id: "cyan-500",
+    bg: "bg-cyan-500",
   },
   {
     id: "sky-500",
+    bg: "bg-sky-500",
   },
   {
     id: "blue-500",
+    bg: "bg-blue-500",
   },
   {
     id: "indigo-500",
+    bg: "bg-indigo-500",
   },
   {
     id: "violet-500",
+    bg: "bg-violet-500",
   },
   {
     id: "purple-500",
+    bg: "bg-purple-500",
   },
   {
     id: "fuchsia-500",
+    bg: "bg-fuchsia-500",
   },
   {
     id: "pink-500",
+    bg: "bg-pink-500",
   },
   {
     id: "rose-500",
+    bg: "bg-rose-500",
   },
 ];
 
@@ -507,15 +525,17 @@ function formatListItemClass(item) {
       </div>
     </div>
 
-    <UModal v-model="state.showColorSelector">
-      <div class="flex gap-2 p-4">
-        <div
-          class="size-16 rounded-full"
-          v-for="color in colorOptions"
-          :class="[`bg-${color.id}`]"
-          @click="selectColor(color.id)"
-        ></div>
-      </div>
+    <UModal v-model:open="state.showColorSelector" title="Select a color">
+      <template #body>
+        <div class="flex gap-2 p-4">
+          <div
+            class="size-16 rounded-full"
+            v-for="color in colorOptions"
+            :class="[`bg-${color.id}`]"
+            @click="selectColor(color.id)"
+          ></div>
+        </div>
+      </template>
     </UModal>
   </div>
 </template>
