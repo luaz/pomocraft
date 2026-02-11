@@ -4,8 +4,8 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
-    "devLocal": "nuxt dev",
-    "dev": "nuxt dev --host virtualbox.local",
+    "dev": "nuxt dev",
+    "devVb": "nuxt dev --host virtualbox.local",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
@@ -20,6 +20,6 @@
     "vue-router": "^4.3.2"
   },
   "devDependencies": {
-    "nuxt": "^3.17.3"
+    "nuxt": "^4.3.1"
   }
 }
