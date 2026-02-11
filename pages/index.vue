@@ -379,6 +379,7 @@ function formatListItemClass(item) {
       <div class="grid grid-flow-col gap-2 auto-cols-3 justify-center">
         <div>
           <UInput
+            class="w-full"
             v-model="state.newTaskName"
             placeholder="Create a new task"
             @keyup.enter="createNewTask"
@@ -483,6 +484,7 @@ function formatListItemClass(item) {
         </div>
         <div>
           <UInput
+            class="w-full"
             v-model="state.newProjectName"
             placeholder="Create a new project"
             @keyup.enter="createNewProject"
