@@ -18,7 +18,9 @@ export default defineNuxtConfig({
       title: "PomoCraft",
     },
   },
+  // Nuxt will detect cloudflare env: https://nuxt.com/deploy/cloudflare#git-integration
   // compatibilityDate: "2024-09-19",
+  /*
   nitro: {
     preset: "cloudflare_pages",
     cloudflare: {
@@ -29,6 +31,7 @@ export default defineNuxtConfig({
       autoSubfolderIndex: false,
     },
   },
+   */
   devtools: { enabled: false },
   modules: ["@nuxt/ui", "@nuxt/image"],
   css: ["~/assets/styles/tailwind.css"],
