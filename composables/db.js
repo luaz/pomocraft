@@ -6,7 +6,12 @@ export const useDb = () => {
     pomo: 'id++, timestamp, taskId, projectId', // Primary key and indexed props
     task: 'id++, projectId, active',
     project: 'id++, active'
-  })
+  });
+  db.version(2).stores({
+    pomo: 'id++, timestamp, taskId, projectId',
+    task: 'id++, projectId, active, sortOrder',
+    project: 'id++, active'
+  });
 
-  return db
-}
+  return db;
+};

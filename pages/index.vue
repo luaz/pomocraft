@@ -32,7 +32,39 @@ const state = reactive({
   showColorSelector: false,
 });
 
+const dragState = reactive({
+  taskId: null,
+  overTaskId: null,
+});
+
 const timerRef = ref(null);
+
+function getTaskSectionKey(task) {
+  const tags = new Set(task.tags || []);
+  if (task.active === 0) return "deleted";
+  if (tags.has("completed")) return "completed";
+  if (tags.has("keep")) return "keep";
+  return "active";
+}
+
+function getTaskSectionRank(task) {
+  const section = getTaskSectionKey(task);
+  if (section === "active") return 0;
+  if (section === "keep") return 1;
+  if (section === "completed") return 2;
+  return 3;
+}
+
+function getNextTaskSortOrder(sectionKey) {
+  const maxSortOrder = (tasks?.value || [])
+    .filter((task) => getTaskSectionKey(task) === sectionKey)
+    .reduce((max, task) => {
+      const order = Number(task.sortOrder);
+      if (!Number.isFinite(order)) return max;
+      return Math.max(max, order);
+    }, 0);
+  return maxSortOrder + 1;
+}
 
 async function addPomo(pomoCount, secondCount) {
   const data = {
@@ -167,7 +199,8 @@ async function createNewTask() {
     name: state.newTaskName,
     projectId: 0,
     active: 1,
-    completed: 0,
+    tags: [],
+    sortOrder: getNextTaskSortOrder("active"),
   };
   await db.task.add(data);
   state.newTaskName = "";
@@ -188,12 +221,26 @@ async function updateTask() {
 const tasks = useObservable(
   liveQuery(async () => {
     const items = await db.task.toArray();
-    return items.sort((a, b) => {
-      const activeDelta = (b.active ?? 0) - (a.active ?? 0);
-      if (activeDelta !== 0) return activeDelta;
+    // Backfill tags for backward compatibility
+    items.forEach((task) => {
+      if (!task.tags) {
+        task.tags = [];
+        if (task.completed === 1) task.tags.push("completed");
+      }
+    });
 
-      const completedDelta = (a.completed ?? 0) - (b.completed ?? 0);
-      if (completedDelta !== 0) return completedDelta;
+    return items.sort((a, b) => {
+      const sectionDelta = getTaskSectionRank(a) - getTaskSectionRank(b);
+      if (sectionDelta !== 0) return sectionDelta;
+
+      const aSortOrder = Number.isFinite(Number(a.sortOrder))
+        ? Number(a.sortOrder)
+        : Number.MAX_SAFE_INTEGER;
+      const bSortOrder = Number.isFinite(Number(b.sortOrder))
+        ? Number(b.sortOrder)
+        : Number.MAX_SAFE_INTEGER;
+      const sortOrderDelta = aSortOrder - bSortOrder;
+      if (sortOrderDelta !== 0) return sortOrderDelta;
 
       const pomoDelta = (b.pomoCount ?? 0) - (a.pomoCount ?? 0);
       if (pomoDelta !== 0) return pomoDelta;
@@ -209,13 +256,25 @@ const findTasks = computed(() => {
 
 const activeTasks = computed(() => {
   return (tasks.value || []).filter(
-    (task) => task.active !== 0 && (task.completed ?? 0) === 0,
+    (task) =>
+      task.active !== 0 &&
+      !(task.tags || []).includes("completed") &&
+      !(task.tags || []).includes("keep"),
+  );
+});
+
+const keepTasks = computed(() => {
+  return (tasks.value || []).filter(
+    (task) =>
+      task.active !== 0 &&
+      (task.tags || []).includes("keep") &&
+      !(task.tags || []).includes("completed"),
   );
 });
 
 const completedTasks = computed(() => {
   return (tasks.value || []).filter(
-    (task) => task.active !== 0 && (task.completed ?? 0) === 1,
+    (task) => task.active !== 0 && (task.tags || []).includes("completed"),
   );
 });
 
@@ -226,6 +285,7 @@ const deletedTasks = computed(() => {
 const taskSections = computed(() => {
   return [
     { key: "active", label: "Active", items: activeTasks.value },
+    { key: "keep", label: "Keep", items: keepTasks.value },
     { key: "completed", label: "Completed", items: completedTasks.value },
     { key: "deleted", label: "Deleted", items: deletedTasks.value },
   ];
@@ -253,7 +313,8 @@ const selectedTaskSection = computed(() => {
 
 function getTaskMenuItems(task) {
   const isDeleted = task.active === 0;
-  const isCompleted = (task.completed ?? 0) === 1;
+  const tags = new Set(task.tags || []);
+  const isCompleted = tags.has("completed");
   const items = [];
 
   if (!isDeleted && !isCompleted) {
@@ -283,12 +344,39 @@ function getTaskMenuItems(task) {
       {
         label: isCompleted ? "Mark Active" : "Mark Completed",
         onSelect: async () => {
+          const newTags = new Set(task.tags || []);
+          if (isCompleted) {
+            newTags.delete("completed");
+          } else {
+            newTags.add("completed");
+          }
+          const nextSectionKey = getTaskSectionKey({
+            ...task,
+            tags: Array.from(newTags),
+          });
           await db.task.update(task.id, {
-            completed: isCompleted ? 0 : 1,
+            tags: Array.from(newTags),
+            sortOrder: getNextTaskSortOrder(nextSectionKey),
           });
           if (!isCompleted && state.activeTask?.id === task.id) {
             state.activeTask = null;
           }
+        },
+      },
+      {
+        label: tags.has("keep") ? "Unmark Keep" : "Mark Keep",
+        onSelect: async () => {
+          const newTags = new Set(task.tags || []);
+          if (newTags.has("keep")) newTags.delete("keep");
+          else newTags.add("keep");
+          const nextSectionKey = getTaskSectionKey({
+            ...task,
+            tags: Array.from(newTags),
+          });
+          await db.task.update(task.id, {
+            tags: Array.from(newTags),
+            sortOrder: getNextTaskSortOrder(nextSectionKey),
+          });
         },
       },
     );
@@ -297,9 +385,13 @@ function getTaskMenuItems(task) {
   items.push({
     label: isDeleted ? "Undelete" : "Delete",
     onSelect: async () => {
-      await db.task.update(task.id, {
+      const nextTask = {
+        ...task,
         active: isDeleted ? 1 : 0,
-        completed: isDeleted ? 0 : (task.completed ?? 0),
+      };
+      await db.task.update(task.id, {
+        active: nextTask.active,
+        sortOrder: getNextTaskSortOrder(getTaskSectionKey(nextTask)),
       });
       if (!isDeleted && state.activeTask?.id === task.id) {
         state.activeTask = null;
@@ -308,6 +400,73 @@ function getTaskMenuItems(task) {
   });
 
   return [items];
+}
+
+function canDragTask(task) {
+  return (
+    dragState.taskId !== null ||
+    (state.taskSectionKey !== "deleted" &&
+      getTaskSectionKey(task) === state.taskSectionKey)
+  );
+}
+
+function onTaskDragStart(task, event) {
+  if (!canDragTask(task)) {
+    event.preventDefault();
+    return;
+  }
+  dragState.taskId = task.id;
+  dragState.overTaskId = null;
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("text/plain", String(task.id));
+}
+
+function onTaskDragOver(task, event) {
+  if (dragState.taskId === null || dragState.taskId === task.id) return;
+  if (!canDragTask(task)) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "move";
+  dragState.overTaskId = task.id;
+}
+
+async function onTaskDrop(targetTask) {
+  if (dragState.taskId === null || dragState.taskId === targetTask.id) return;
+  const sourceTask = findTasks.value.get(dragState.taskId);
+  if (!sourceTask) {
+    onTaskDragEnd();
+    return;
+  }
+  if (
+    getTaskSectionKey(sourceTask) !== state.taskSectionKey ||
+    getTaskSectionKey(targetTask) !== state.taskSectionKey
+  ) {
+    onTaskDragEnd();
+    return;
+  }
+
+  const sectionTasks = [...selectedTaskSection.value.items];
+  const sourceIndex = sectionTasks.findIndex((task) => task.id === sourceTask.id);
+  const targetIndex = sectionTasks.findIndex((task) => task.id === targetTask.id);
+  if (sourceIndex < 0 || targetIndex < 0) {
+    onTaskDragEnd();
+    return;
+  }
+
+  const [movedTask] = sectionTasks.splice(sourceIndex, 1);
+  sectionTasks.splice(targetIndex, 0, movedTask);
+
+  await Promise.all(
+    sectionTasks.map((task, index) =>
+      db.task.update(task.id, { sortOrder: index + 1 }),
+    ),
+  );
+
+  onTaskDragEnd();
+}
+
+function onTaskDragEnd() {
+  dragState.taskId = null;
+  dragState.overTaskId = null;
 }
 
 async function createNewProject() {
@@ -522,10 +681,16 @@ function formatListItemClass(item) {
                 state.activeTask?.id == task.id
                   ? 'dark:bg-gray-700'
                   : 'dark:bg-slate-800',
-                task.active === 0 || (task.completed ?? 0) === 1
+                task.active === 0 || (task.tags || []).includes('completed')
                   ? 'opacity-60'
                   : '',
+                dragState.overTaskId === task.id ? 'ring-2 ring-sky-500' : '',
               ]"
+              :draggable="canDragTask(task)"
+              @dragstart="onTaskDragStart(task, $event)"
+              @dragover="onTaskDragOver(task, $event)"
+              @drop="onTaskDrop(task)"
+              @dragend="onTaskDragEnd"
             >
               <div class="flex items-center">
                 <UDropdownMenu
@@ -552,6 +717,7 @@ function formatListItemClass(item) {
                       formatTime(task.secondCount)
                     }})
                   </div>
+
                   {{ task.name }}
                   <span
                     v-if="findProjects.has(task.projectId)"
