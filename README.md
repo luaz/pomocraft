@@ -19,6 +19,7 @@ Automatic Deployment via Github to Cloudflare Page (Nuxr v4)
 - Build configuration: (In a standard Nuxt build, the output is .output/public. However, the Nitro preset for Cloudflare Pages specifically bundles the worker (server logic) and the static files into a single dist directory. This is the "industry standard" for how Cloudflare's own integration expects a full-stack Nuxt app to look.)
   - Build command: npm run build
   - Build output: dist
+- Create .npmrc with `legacy-peer-deps=true` to solve `Invalid: lock file's commander@11.1.0 does not satisfy commander@13.1.0`
 
 ## TODO
 
