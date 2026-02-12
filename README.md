@@ -22,4 +22,7 @@ npm run dev
 
 ## UPDATES
 
-2026-02-12: Delete/Undelete Project
+2026-02-12:
+
+- Delete/Undelete Project
+- Upgrade to Nuxy v4

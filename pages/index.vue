@@ -1,7 +1,6 @@
 <script setup>
 import { liveQuery } from "dexie";
 import { useObservable } from "@vueuse/rxjs";
-import { bg } from "@nuxt/ui/runtime/locale/index.js";
 defineOptions({
   inheritAttrs: false,
 });
@@ -23,6 +22,7 @@ const state = reactive({
   editTaskId: null,
   editTaskName: null,
   editTaskProjectId: null,
+  taskSectionKey: "active",
 
   newProjectName: null,
   menuProjectItem: null,
@@ -167,6 +167,7 @@ async function createNewTask() {
     name: state.newTaskName,
     projectId: 0,
     active: 1,
+    completed: 0,
   };
   await db.task.add(data);
   state.newTaskName = "";
@@ -175,9 +176,9 @@ async function createNewTask() {
 async function updateTask() {
   let data = {};
   if (state.editTaskName) data.name = state.editTaskName;
-  if (state.editTaskProjectId) data.projectId = state.editTaskProjectId;
+  if (state.editTaskProjectId != null) data.projectId = state.editTaskProjectId;
 
-  await db.task.update(state.menuTaskItem.id, data);
+  await db.task.update(state.editTaskId, data);
 
   state.editTaskId = null;
   state.editTaskName = null;
@@ -186,7 +187,19 @@ async function updateTask() {
 
 const tasks = useObservable(
   liveQuery(async () => {
-    return await db.task.where("active").equals(1).toArray();
+    const items = await db.task.toArray();
+    return items.sort((a, b) => {
+      const activeDelta = (b.active ?? 0) - (a.active ?? 0);
+      if (activeDelta !== 0) return activeDelta;
+
+      const completedDelta = (a.completed ?? 0) - (b.completed ?? 0);
+      if (completedDelta !== 0) return completedDelta;
+
+      const pomoDelta = (b.pomoCount ?? 0) - (a.pomoCount ?? 0);
+      if (pomoDelta !== 0) return pomoDelta;
+
+      return (a.name || "").localeCompare(b.name || "");
+    });
   }),
 );
 
@@ -194,35 +207,108 @@ const findTasks = computed(() => {
   return new Map(tasks?.value?.map((item) => [item.id, item]));
 });
 
-const taskMenuItems = [
-  [
-    {
+const activeTasks = computed(() => {
+  return (tasks.value || []).filter(
+    (task) => task.active !== 0 && (task.completed ?? 0) === 0,
+  );
+});
+
+const completedTasks = computed(() => {
+  return (tasks.value || []).filter(
+    (task) => task.active !== 0 && (task.completed ?? 0) === 1,
+  );
+});
+
+const deletedTasks = computed(() => {
+  return (tasks.value || []).filter((task) => task.active === 0);
+});
+
+const taskSections = computed(() => {
+  return [
+    { key: "active", label: "Active", items: activeTasks.value },
+    { key: "completed", label: "Completed", items: completedTasks.value },
+    { key: "deleted", label: "Deleted", items: deletedTasks.value },
+  ];
+});
+
+const taskSectionItems = computed(() => {
+  return taskSections.value.map((section) => ({
+    label: `${section.label} (${section.items.length})`,
+    value: section.key,
+  }));
+});
+
+const taskSectionMenuKey = computed(() =>
+  taskSectionItems.value.map((i) => i.label).join(""),
+);
+
+const selectedTaskSection = computed(() => {
+  return (
+    taskSections.value.find(
+      (section) => section.key === state.taskSectionKey,
+    ) ||
+    taskSections.value[0] || { label: "Active", items: [] }
+  );
+});
+
+function getTaskMenuItems(task) {
+  const isDeleted = task.active === 0;
+  const isCompleted = (task.completed ?? 0) === 1;
+  const items = [];
+
+  if (!isDeleted && !isCompleted) {
+    items.push({
       label: "Start",
       onSelect: () => {
-        state.activeTask = state.menuTaskItem;
+        state.activeTask = task;
       },
-    },
-    {
-      label: "Edit",
-      onSelect: async () => {
-        state.editTaskId = state.menuTaskItem.id;
-        state.editTaskName = state.menuTaskItem.name;
+    });
+  }
+
+  if (!isDeleted) {
+    items.push(
+      {
+        label: "Edit",
+        onSelect: async () => {
+          state.editTaskId = task.id;
+          state.editTaskName = task.name;
+        },
       },
-    },
-    {
-      label: "Project",
-      onSelect: () => {
-        state.editTaskProjectId = state.menuTaskItem.projectId || 0;
+      {
+        label: "Project",
+        onSelect: () => {
+          state.editTaskProjectId = task.projectId || 0;
+        },
       },
-    },
-    {
-      label: "Delete",
-      onSelect: async () => {
-        await db.task.update(state.menuTaskItem.id, { active: 0 });
+      {
+        label: isCompleted ? "Mark Active" : "Mark Completed",
+        onSelect: async () => {
+          await db.task.update(task.id, {
+            completed: isCompleted ? 0 : 1,
+          });
+          if (!isCompleted && state.activeTask?.id === task.id) {
+            state.activeTask = null;
+          }
+        },
       },
+    );
+  }
+
+  items.push({
+    label: isDeleted ? "Undelete" : "Delete",
+    onSelect: async () => {
+      await db.task.update(task.id, {
+        active: isDeleted ? 1 : 0,
+        completed: isDeleted ? 0 : (task.completed ?? 0),
+      });
+      if (!isDeleted && state.activeTask?.id === task.id) {
+        state.activeTask = null;
+      }
     },
-  ],
-];
+  });
+
+  return [items];
+}
 
 async function createNewProject() {
   const data = {
@@ -408,29 +494,42 @@ function formatListItemClass(item) {
     <div>
       <h1 class="text-2xl my-3">
         PomoCraft
-        <span class="ms-2 text-sm text-slate-500 align-middle">v{{ publicConfig.appVersion }}</span>
+        <span class="ms-2 text-sm text-slate-500 align-middle"
+          >v{{ publicConfig.appVersion }}</span
+        >
       </h1>
 
       <div class="grid grid-flow-col gap-2 auto-cols-3 justify-center">
-        <div>
+        <div class="min-w-60">
           <UInput
             class="w-full"
             v-model="state.newTaskName"
             placeholder="Create a new task"
             @keyup.enter="createNewTask"
           />
-          <div v-for="task in tasks" :key="task.id">
+          <UInputMenu
+            :key="taskSectionMenuKey"
+            class="w-full mt-2"
+            v-model="state.taskSectionKey"
+            :items="taskSectionItems"
+            value-key="value"
+          />
+
+          <div v-for="task in selectedTaskSection.items" :key="task.id">
             <div
               class="p-2 my-2 rounded-md"
               :class="[
                 state.activeTask?.id == task.id
                   ? 'dark:bg-gray-700'
                   : 'dark:bg-slate-800',
+                task.active === 0 || (task.completed ?? 0) === 1
+                  ? 'opacity-60'
+                  : '',
               ]"
             >
               <div class="flex items-center">
                 <UDropdownMenu
-                  :items="taskMenuItems"
+                  :items="getTaskMenuItems(task)"
                   :content="{ side: 'bottom', align: 'start' }"
                 >
                   <UButton
@@ -516,7 +615,7 @@ function formatListItemClass(item) {
             </div>
           </div>
         </div>
-        <div>
+        <div class="min-w-60">
           <UInput
             class="w-full"
             v-model="state.newProjectName"

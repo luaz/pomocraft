@@ -10,7 +10,7 @@ const appVersion = packageJson.version || "0.0.0";
 export default defineNuxtConfig({
   runtimeConfig: {
     public: {
-      appVersion: "2.0.0",
+      appVersion: "1.2.0",
     },
   },
   app: {
