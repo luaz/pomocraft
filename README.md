@@ -4,12 +4,21 @@ A simple pomodoro task client-side web application
 
 DEMO: https://pomocraft.luasoftware.com/
 
-## Dev
+## DEV
 
 ```
 nvm use 20
 npm run dev
 ```
+
+## DEPLOYMENT
+
+Automatic Deployment via Github to Cloudflare Page (Nuxr v4)
+
+- Don't edit nitro.preset: https://nuxt.com/deploy/cloudflare#git-integration
+- Build configuration: (In a standard Nuxt build, the output is .output/public. However, the Nitro preset for Cloudflare Pages specifically bundles the worker (server logic) and the static files into a single dist directory. This is the "industry standard" for how Cloudflare's own integration expects a full-stack Nuxt app to look.)
+  - Build command: npm run build
+  - Build output: dist
 
 ## TODO
 
