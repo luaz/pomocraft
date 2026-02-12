@@ -26,3 +26,5 @@ npm run dev
 
 - Delete/Undelete Project
 - Upgrade to Nuxy v4
+- Task Active/Keep/Completed/Deleted status
+- Reorg task position
