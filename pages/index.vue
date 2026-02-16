@@ -338,6 +338,7 @@ function getTaskMenuItems(task) {
       {
         label: "Project",
         onSelect: () => {
+          state.editTaskId = task.id;
           state.editTaskProjectId = task.projectId || 0;
         },
       },
@@ -445,8 +446,12 @@ async function onTaskDrop(targetTask) {
   }
 
   const sectionTasks = [...selectedTaskSection.value.items];
-  const sourceIndex = sectionTasks.findIndex((task) => task.id === sourceTask.id);
-  const targetIndex = sectionTasks.findIndex((task) => task.id === targetTask.id);
+  const sourceIndex = sectionTasks.findIndex(
+    (task) => task.id === sourceTask.id,
+  );
+  const targetIndex = sectionTasks.findIndex(
+    (task) => task.id === targetTask.id,
+  );
   if (sourceIndex < 0 || targetIndex < 0) {
     onTaskDragEnd();
     return;

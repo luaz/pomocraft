@@ -32,6 +32,10 @@ Automatic Deployment via Github to Cloudflare Page (Nuxr v4)
 
 ## UPDATES
 
+2026-02-16:
+
+- Fix task change project bug
+
 2026-02-12:
 
 - Delete/Undelete Project
